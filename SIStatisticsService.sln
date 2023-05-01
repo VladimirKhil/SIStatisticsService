@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7EE42872-AC8E-4753-8E5C-45F0C0F6DBF2}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6E9D4781-AA8D-4EA8-9785-832C2AF09892}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{79E54C1D-040E-4F83-9BFF-1AA2071098D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIStatisticsService.Contract", "src\SIStatisticsService.Contract\SIStatisticsService.Contract.csproj", "{E53A175C-050C-43A4-BCE7-AC02066BAA7C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIStatisticsService.Client", "src\SIStatisticsService.Client\SIStatisticsService.Client.csproj", "{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIStatisticsService.IntegrationTests", "test\SIStatisticsService.IntegrationTests\SIStatisticsService.IntegrationTests.csproj", "{B95B9AE6-14C2-42D4-9B39-00DEA118E037}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIStatisticsService.Database", "src\SIStatisticsService.Database\SIStatisticsService.Database.csproj", "{F88C567B-CD5C-43B8-8713-6CD472820983}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIStatisticsService", "src\SIStatisticsService\SIStatisticsService.csproj", "{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E53A175C-050C-43A4-BCE7-AC02066BAA7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53A175C-050C-43A4-BCE7-AC02066BAA7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53A175C-050C-43A4-BCE7-AC02066BAA7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53A175C-050C-43A4-BCE7-AC02066BAA7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B95B9AE6-14C2-42D4-9B39-00DEA118E037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B95B9AE6-14C2-42D4-9B39-00DEA118E037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B95B9AE6-14C2-42D4-9B39-00DEA118E037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B95B9AE6-14C2-42D4-9B39-00DEA118E037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F88C567B-CD5C-43B8-8713-6CD472820983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F88C567B-CD5C-43B8-8713-6CD472820983}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F88C567B-CD5C-43B8-8713-6CD472820983}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F88C567B-CD5C-43B8-8713-6CD472820983}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E53A175C-050C-43A4-BCE7-AC02066BAA7C} = {6E9D4781-AA8D-4EA8-9785-832C2AF09892}
+		{0C28F5F9-8F7A-4503-A99F-C4AAEA95CD2A} = {6E9D4781-AA8D-4EA8-9785-832C2AF09892}
+		{B95B9AE6-14C2-42D4-9B39-00DEA118E037} = {79E54C1D-040E-4F83-9BFF-1AA2071098D2}
+		{F88C567B-CD5C-43B8-8713-6CD472820983} = {6E9D4781-AA8D-4EA8-9785-832C2AF09892}
+		{8E32304D-F895-4EC7-B7AC-C8E7A5DF2963} = {6E9D4781-AA8D-4EA8-9785-832C2AF09892}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F14E4C85-5D74-4E2D-9088-378D36288474}
+	EndGlobalSection
+EndGlobal
