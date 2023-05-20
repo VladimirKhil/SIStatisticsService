@@ -12,16 +12,7 @@ using System.Data.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, lc) => lc
-    .WriteTo.Console()
-    .WriteTo.File(
-        "logs\\sistatistics.log",
-        fileSizeLimitBytes: 5 * 1024 * 1024,
-        shared: true,
-        rollOnFileSizeLimit: true,
-        retainedFileCountLimit: 5,
-        flushToDiskInterval: TimeSpan.FromSeconds(1))
-    .ReadFrom.Configuration(ctx.Configuration));// Not working when Assembly is trimmed
+builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
 ConfigureServices(builder.Services, builder.Configuration);
 
