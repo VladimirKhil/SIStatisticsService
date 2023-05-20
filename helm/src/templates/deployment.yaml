@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sistatistics.fullname" . }}
+  labels:
+    {{- include "sistatistics.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sistatistics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sistatistics.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: DBPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: '{{ .Values.database.passwordKey }}'
+                  key: '{{ .Values.database.passwordValue }}'
+            - name: ConnectionStrings__SIStatistics
+              value: 'Host={{ .Values.database.host }};Username={{ .Values.database.user }};Password=$(DBPASSWORD);Database={{ .Values.database.name }}'
+            - name: SIStatistics__TopPackagesCount
+              value: '{{ .Values.options.topPackagesCount }}'
+            - name: Serilog__MinimumLevel
+              value: '{{ .Values.options.logLevel }}'
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

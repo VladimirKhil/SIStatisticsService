@@ -1,0 +1,38 @@
+replicaCount: 1
+
+image:
+  repository: vladimirkhil/sistatisticsservice
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+service:
+  type: ClusterIP
+  port: 5000
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+
+database:
+  host: ''
+  name: 'sistatistics'
+  user: 'postgres'
+  passwordKey: ''
+  passwordValue: 'postgres-password'
+
+options:
+  topPackagesCount: 10
+  logLevel: Warning

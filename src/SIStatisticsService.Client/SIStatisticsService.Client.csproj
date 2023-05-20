@@ -12,6 +12,7 @@
 	<PackageTags>SIStatisticsService</PackageTags>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageId>VKhil.SIStatisticsService.Client</PackageId>
+	<Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

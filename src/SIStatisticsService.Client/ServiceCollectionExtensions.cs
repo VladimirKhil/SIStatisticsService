@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
             client =>
             {
                 var serviceUri = options?.ServiceUri;
-                client.BaseAddress = serviceUri != null ? new Uri(serviceUri, "/api/v1/") : null;
+                client.BaseAddress = serviceUri != null ? new Uri(serviceUri, "api/v1/") : null;
                 client.DefaultRequestVersion = HttpVersion.Version20;
 
                 if (options?.ClientSecret != null)
