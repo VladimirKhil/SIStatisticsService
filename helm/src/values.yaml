@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: vladimirkhil/sistatisticsservice
   pullPolicy: IfNotPresent
-  tag: "1.0.0"
+  tag: "1.0.1"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -25,6 +25,8 @@ ingress:
   tls: []
 
 resources: {}
+
+logPath: ''
 
 database:
   host: ''

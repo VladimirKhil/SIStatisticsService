@@ -20,6 +20,15 @@ spec:
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 12 }}
+      volumes:
+        - name: log
+          {{- if .Values.logPath }}
+          hostPath:
+            path: '{{- toYaml .Values.logPath }}'
+            type: Directory
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -40,5 +49,8 @@ spec:
               value: '{{ .Values.options.topPackagesCount }}'
             - name: Serilog__MinimumLevel
               value: '{{ .Values.options.logLevel }}'
+          volumeMounts:
+          - name: log
+            mountPath: /app/logs
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
