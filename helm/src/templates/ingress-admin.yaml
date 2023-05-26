@@ -7,7 +7,11 @@ metadata:
   labels:
     {{- include "sistatistics.labels" . | nindent 4 }}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /api/v1/games/$2
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret-type: auth-map
+    nginx.ingress.kubernetes.io/auth-secret: {{ include "sistatistics.fullname" . }}-secret
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+    nginx.ingress.kubernetes.io/rewrite-target: /api/v1/admin/$2
     {{- if .Values.ingress.annotations -}}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
@@ -28,7 +32,7 @@ spec:
     - http:
         paths:
           {{- range .paths }}
-          - path: {{ .path }}api/v1/games(/|$)(.*)
+          - path: {{ .path }}api/v1/admin(/|$)(.*)
             pathType: {{ .pathType }}
             backend:
               service:

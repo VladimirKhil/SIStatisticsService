@@ -5,6 +5,7 @@ using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
 using SIStatisticsService.Database.Models.Games;
+using SIStatisticsService.Metrics;
 
 namespace SIStatisticsService.Services;
 
@@ -13,11 +14,16 @@ public sealed class GamesService : IGamesService
 {
     private readonly SIStatisticsDbConnection _connection;
     private readonly SIStatisticsServiceOptions _options;
+    private readonly OtelMetrics _metrics;
 
-    public GamesService(SIStatisticsDbConnection connection, IOptions<SIStatisticsServiceOptions> options)
+    public GamesService(
+        SIStatisticsDbConnection connection,
+        IOptions<SIStatisticsServiceOptions> options,
+        OtelMetrics metrics)
     {
         _connection = connection;
         _options = options.Value;
+        _metrics = metrics;
     }
 
     public Task<GameResultInfo[]> GetGamesByFilterAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
@@ -66,21 +72,28 @@ public sealed class GamesService : IGamesService
         };
     }
 
-    public async Task<PackageStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
+    public async Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
     {
-        var query = from g in _connection.Games
-                    from p in _connection.Packages.Where(p => p.Id == g.PackageId)
-                    where ((int)g.Platform & (int)statisticFilter.Platform) > 0
-                        && g.FinishTime >= statisticFilter.From
-                        && g.FinishTime <= statisticFilter.To
-                    select new PackageInfo
+        var query = from p in _connection.Packages
+                    join g in _connection.Games on p.Id equals g.PackageId into packageGames
+                    from pg in packageGames.DefaultIfEmpty()
+                    where ((int)pg.Platform & (int)statisticFilter.Platform) > 0
+                        && pg.FinishTime >= statisticFilter.From
+                        && pg.FinishTime <= statisticFilter.To
+                    group p by new { p.Id, p.Name, p.Hash, p.Authors } into g
+                    orderby g.Count() descending
+                    select new PackageStatistic
                     {
-                        Name = p.Name,
-                        Hash = p.Hash,
-                        Authors = p.Authors
+                        Package = new PackageInfo
+                        {
+                            Name = g.Key.Name,
+                            Hash = g.Key.Hash,
+                            Authors = g.Key.Authors
+                        },
+                        GameCount = g.Count()
                     };
 
-        return new PackageStatistic
+        return new PackagesStatistic
         {
             Packages = await query.Take(_options.TopPackagesCount).ToArrayAsync(cancellationToken)
         };
@@ -92,6 +105,8 @@ public sealed class GamesService : IGamesService
         var packageId = await InsertOrUpdatePackageAsync(gameResult.Package, cancellationToken);
         await InsertGameAsync(gameResult, packageId, cancellationToken);
         await tx.CommitAsync(cancellationToken);
+
+        _metrics.AddGameReport();
     }
 
     private Task<int> InsertGameAsync(GameResultInfo gameResult, int packageId, CancellationToken cancellationToken) =>

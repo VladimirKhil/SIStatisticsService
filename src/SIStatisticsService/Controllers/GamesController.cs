@@ -37,7 +37,7 @@ public sealed class GamesController : ControllerBase
     }
 
     [HttpGet("packages")]
-    public async Task<ActionResult<PackageStatistic>> GetLatestTopPackagesAsync(
+    public async Task<ActionResult<PackagesStatistic>> GetLatestTopPackagesAsync(
         [FromQuery] StatisticFilter statisticFilter,
         CancellationToken cancellationToken)
     {
@@ -57,20 +57,6 @@ public sealed class GamesController : ControllerBase
             throw new ServiceException(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform, System.Net.HttpStatusCode.BadRequest);
         }
 
-        return await ProcessGameReportAsync(gameInfo, cancellationToken);
-    }
-
-    [HttpPost("reports/server")]
-    public async Task<IActionResult> SendGameServerReportAsync(GameReport gameReport, CancellationToken cancellationToken = default)
-    {
-        var gameInfo = gameReport.Info
-            ?? throw new ServiceException(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound, System.Net.HttpStatusCode.BadRequest);
-
-        return await ProcessGameReportAsync(gameInfo, cancellationToken);
-    }
-
-    private async Task<IActionResult> ProcessGameReportAsync(GameResultInfo gameInfo, CancellationToken cancellationToken)
-    {
         if (DateTimeOffset.UtcNow.Subtract(gameInfo.FinishTime).TotalHours > 1.0)
         {
             throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime, System.Net.HttpStatusCode.BadRequest);

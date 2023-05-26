@@ -40,7 +40,7 @@ public interface ISIStatisticsServiceClient
     /// </summary>
     /// <param name="filter">Statistic filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<PackageStatistic?> GetLatestTopPackagesAsync(StatisticFilter filter, CancellationToken cancellationToken = default);
+    Task<PackagesStatistic?> GetLatestTopPackagesAsync(StatisticFilter filter, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets question info.

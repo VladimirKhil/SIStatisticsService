@@ -53,7 +53,7 @@ internal sealed class GamesApiTests : TestsBase
                 Hash = "1",
                 Authors = new[] { "TestAuthor" }
             },
-            Platform = GamePlatforms.GameServer,
+            Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
                 ["Alice"] = 1999,
@@ -84,7 +84,7 @@ internal sealed class GamesApiTests : TestsBase
                 Hash = "2",
                 Authors = new[] { "TestAuthor 2" }
             },
-            Platform = GamePlatforms.GameServer,
+            Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
                 ["Bett"] = 10_000,
@@ -113,7 +113,7 @@ internal sealed class GamesApiTests : TestsBase
                 Hash = "1",
                 Authors = new[] { "TestAuthor" }
             },
-            Platform = GamePlatforms.GameServer,
+            Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
                 ["Nora"] = 3,
@@ -165,11 +165,11 @@ internal sealed class GamesApiTests : TestsBase
             {
                 From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
                 To = DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(1)),
-                Platform = GamePlatforms.GameServer,
+                Platform = GamePlatforms.Local,
             });
 
         Assert.That(gamesInfo, Is.Not.Null);
-        Assert.That(gamesInfo.Results, Has.Length.GreaterThanOrEqualTo(1));
+        Assert.That(gamesInfo.Results, Has.Length.GreaterThanOrEqualTo(1), "No results found");
 
         var gameResult = gamesInfo.Results.FirstOrDefault(r => r.Name == uniqueName);
         Assert.That(gameResult, Is.Not.Null);
@@ -195,7 +195,7 @@ internal sealed class GamesApiTests : TestsBase
             {
                 From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
                 To = DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(1)),
-                Platform = GamePlatforms.GameServer,
+                Platform = GamePlatforms.Local,
             });
 
         Assert.That(statistic, Is.Not.Null);
@@ -211,7 +211,7 @@ internal sealed class GamesApiTests : TestsBase
             {
                 From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
                 To = DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(1)),
-                Platform = GamePlatforms.GameServer,
+                Platform = GamePlatforms.Local,
             });
 
         Assert.That(packages, Is.Not.Null);
@@ -219,8 +219,8 @@ internal sealed class GamesApiTests : TestsBase
         Assert.Multiple(() =>
         {
             Assert.That(packages.Packages, Has.Length.GreaterThan(1));
-            Assert.That(packages.Packages[0].Name, Is.EqualTo("TestPackage"));
-            Assert.That(packages.Packages[1].Name, Is.EqualTo("TestPackage 2"));
+            Assert.That(packages.Packages[0].Package?.Name, Is.EqualTo("TestPackage"));
+            Assert.That(packages.Packages[1].Package?.Name, Is.EqualTo("TestPackage 2"));
         });
     }
 }

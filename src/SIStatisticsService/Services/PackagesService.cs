@@ -4,7 +4,7 @@ using SIPackages.Core;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
-using System.Data.Common;
+using SIStatisticsService.Metrics;
 using System.Text;
 
 namespace SIStatisticsService.Services;
@@ -13,10 +13,12 @@ namespace SIStatisticsService.Services;
 public sealed class PackagesService : IPackagesService
 {
     private readonly SIStatisticsDbConnection _connection;
+    private readonly OtelMetrics _metrics;
 
-    public PackagesService(SIStatisticsDbConnection connection)
+    public PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics)
     {
         _connection = connection;
+        _metrics = metrics;
     }
 
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
@@ -37,18 +39,6 @@ public sealed class PackagesService : IPackagesService
             Entities = await query.ToArrayAsync(cancellationToken)
         };
     }
-
-    private static RelationType MapType(Database.Models.Questions.RelationType type) =>
-        type switch
-        {
-            Database.Models.Questions.RelationType.Right => RelationType.Right,
-            Database.Models.Questions.RelationType.Wrong => RelationType.Wrong,
-            Database.Models.Questions.RelationType.Apellated => RelationType.Apellated,
-            Database.Models.Questions.RelationType.Accepted => RelationType.Accepted,
-            Database.Models.Questions.RelationType.Rejected => RelationType.Rejected,
-            Database.Models.Questions.RelationType.Complained => RelationType.Complained,
-            _ => throw new NotSupportedException()
-        };
 
     public async Task ImportPackageAsync(Package package, CancellationToken cancellationToken)
     {
@@ -93,7 +83,21 @@ public sealed class PackagesService : IPackagesService
         }
 
         await tx.CommitAsync(cancellationToken);
+
+        _metrics.AddPackage();
     }
+
+    private static RelationType MapType(Database.Models.Questions.RelationType type) =>
+        type switch
+        {
+            Database.Models.Questions.RelationType.Right => RelationType.Right,
+            Database.Models.Questions.RelationType.Wrong => RelationType.Wrong,
+            Database.Models.Questions.RelationType.Apellated => RelationType.Apellated,
+            Database.Models.Questions.RelationType.Accepted => RelationType.Accepted,
+            Database.Models.Questions.RelationType.Rejected => RelationType.Rejected,
+            Database.Models.Questions.RelationType.Complained => RelationType.Complained,
+            _ => throw new NotSupportedException()
+        };
 
     private async Task InsertOrUpdateAnswer(
         int themeId,

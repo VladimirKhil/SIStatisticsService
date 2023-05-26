@@ -6,7 +6,12 @@
 public sealed class PackageStatistic
 {
     /// <summary>
-    /// Statistic packages.
+    /// Package info.
     /// </summary>
-    public PackageInfo[] Packages { get; set; } = Array.Empty<PackageInfo>();
+    public PackageInfo? Package { get; set; }
+
+    /// <summary>
+    /// Number of games played with this package.
+    /// </summary>
+    public int GameCount { get; set; }
 }

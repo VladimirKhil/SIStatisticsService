@@ -5,6 +5,7 @@ using Polly.Extensions.Http;
 using SIStatisticsService.Contract;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace SIStatisticsService.Client;
 
@@ -32,9 +33,9 @@ public static class ServiceCollectionExtensions
                 client.BaseAddress = serviceUri != null ? new Uri(serviceUri, "api/v1/") : null;
                 client.DefaultRequestVersion = HttpVersion.Version20;
 
-                if (options?.ClientSecret != null)
+                if (options != null)
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Custom", options.ClientSecret);
+                    SetAuthSecret(options, client);
                 }
             }).AddPolicyHandler(HttpPolicyExtensions
                 .HandleTransientHttpError()
@@ -43,5 +44,16 @@ public static class ServiceCollectionExtensions
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))));
 
         return services;
+    }
+
+    private static void SetAuthSecret(SIStatisticsClientOptions options, HttpClient client)
+    {
+        if (options.ClientSecret == null)
+        {
+            return;
+        }
+
+        var authHeader = Convert.ToBase64String(Encoding.ASCII.GetBytes($"admin:{options.ClientSecret}"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authHeader);
     }
 }

@@ -2,10 +2,13 @@ using AspNetCoreRateLimit;
 using EnsureThat;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Conventions;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Serilog;
 using SIStatisticsService.Configuration;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
+using SIStatisticsService.Metrics;
 using SIStatisticsService.Middlewares;
 using SIStatisticsService.Services;
 using System.Data.Common;
@@ -37,6 +40,7 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
     services.AddTransient<IPackagesService, PackagesService>();
 
     AddRateLimits(services, configuration);
+    AddMetrics(services);
 }
 
 static void ConfigureMigrationRunner(IServiceCollection services, IConfiguration configuration)
@@ -75,6 +79,22 @@ static void AddRateLimits(IServiceCollection services, IConfiguration configurat
     services.AddMemoryCache();
     services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
     services.AddInMemoryRateLimiting();
+}
+
+static void AddMetrics(IServiceCollection services)
+{
+    var meters = new OtelMetrics();
+
+    services.AddOpenTelemetry().WithMetrics(builder =>
+        builder
+            .ConfigureResource(rb => rb.AddService("SIStatistics"))
+            .AddMeter(meters.MeterName)
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
+
+    services.AddSingleton(meters);
 }
 
 static void CreateDatabase(WebApplication app)

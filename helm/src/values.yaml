@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: vladimirkhil/sistatisticsservice
   pullPolicy: IfNotPresent
-  tag: "1.0.1"
+  tag: "1.0.2"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -20,6 +20,7 @@ service:
 ingress:
   enabled: true
   className: "nginx"
+  clientSecret: ''
   annotations: {}
   hosts: []
   tls: []

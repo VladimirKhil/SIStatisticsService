@@ -7,15 +7,20 @@ using System.Xml;
 namespace SIStatisticsService.Controllers;
 
 /// <summary>
-/// Provides API for working with packages.
+/// Provides Admin-level API for working with games and packages.
 /// </summary>
-[Route("api/v1/packages")]
+[Route("api/v1/admin")]
 [ApiController]
-public sealed class PackagesController : ControllerBase
+public sealed class AdminController : ControllerBase
 {
+    private readonly IGamesService _gamesService;
     private readonly IPackagesService _packagesService;
 
-    public PackagesController(IPackagesService packagesService) => _packagesService = packagesService;
+    public AdminController(IGamesService gamesService, IPackagesService packagesService)
+    {
+        _gamesService = gamesService;
+        _packagesService = packagesService;
+    }
 
     [HttpGet("questions")]
     public async Task<ActionResult<QuestionInfoResponse>> GetQuestionInfoAsync(
@@ -28,7 +33,7 @@ public sealed class PackagesController : ControllerBase
         return Ok(questionInfo);
     }
 
-    [HttpPost]
+    [HttpPost("packages")]
     public async Task<IActionResult> ImportPackageContentsAsync()
     {
         var cancellationToken = HttpContext.RequestAborted;
@@ -50,6 +55,22 @@ public sealed class PackagesController : ControllerBase
         }
 
         await _packagesService.ImportPackageAsync(package, cancellationToken);
+
+        return Accepted();
+    }
+
+    [HttpPost("reports")]
+    public async Task<IActionResult> SendGameReportAsync(GameReport gameReport, CancellationToken cancellationToken = default)
+    {
+        var gameInfo = gameReport.Info
+            ?? throw new ServiceException(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound, System.Net.HttpStatusCode.BadRequest);
+
+        if (DateTimeOffset.UtcNow.Subtract(gameInfo.FinishTime).TotalHours > 1.0)
+        {
+            throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime, System.Net.HttpStatusCode.BadRequest);
+        }
+
+        await _gamesService.AddGameResultAsync(gameInfo, cancellationToken);
 
         return Accepted();
     }

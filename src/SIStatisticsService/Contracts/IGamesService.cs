@@ -33,5 +33,5 @@ public interface IGamesService
     /// </summary>
     /// <param name="statisticFilter">Statistic filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<PackageStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken);
+    Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken);
 }
