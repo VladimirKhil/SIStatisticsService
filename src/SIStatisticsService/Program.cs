@@ -70,6 +70,8 @@ static void Configure(WebApplication app)
     ApplyMigrations(app);
 
     app.UseIpRateLimiting();
+
+    app.UseOpenTelemetryPrometheusScrapingEndpoint();
 }
 
 static void AddRateLimits(IServiceCollection services, IConfiguration configuration)

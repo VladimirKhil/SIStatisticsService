@@ -19,7 +19,7 @@ public sealed class OtelMetrics
         MeterName = meterName;
 
         UploadedGameReportsCounter = meter.CreateCounter<int>("game-reports-uploaded");
-        UploadedPackagesCounter = meter.CreateCounter<int>("packages-uploaded");
+        UploadedPackagesCounter = meter.CreateCounter<int>("packages-content-uploaded");
     }
 
     public void AddGameReport() => UploadedGameReportsCounter.Add(1);
