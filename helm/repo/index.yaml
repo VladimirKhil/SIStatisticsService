@@ -2,8 +2,18 @@ apiVersion: v1
 entries:
   sistatistics:
   - apiVersion: v2
+    appVersion: 1.0.3
+    created: "2023-05-26T22:30:11.8007899+02:00"
+    description: Service for collecting SIGame games and packages statistics
+    digest: d21f039a603b44bd1e21ac43ddf477223039c17b8631fc8696c75af0d25a936e
+    name: sistatistics
+    type: application
+    urls:
+    - sistatistics-1.0.3.tgz
+    version: 1.0.3
+  - apiVersion: v2
     appVersion: 1.0.2
-    created: "2023-05-26T22:17:05.7820126+02:00"
+    created: "2023-05-26T22:30:11.7985815+02:00"
     description: Service for collecting SIGame games and packages statistics
     digest: 8087ae306d947071028cd7bc0b61ed8a55f753a5448443c034a3f36913352792
     name: sistatistics
@@ -13,7 +23,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2023-05-26T22:17:05.7791875+02:00"
+    created: "2023-05-26T22:30:11.7980263+02:00"
     description: Service for collecting SIGame games and packages statistics
     digest: 22db702c2060f6f6e3c2bbd9a1c630c56f2f088e19a20206b6d52f70bd2d8f28
     name: sistatistics
@@ -23,7 +33,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-26T22:17:05.7774158+02:00"
+    created: "2023-05-26T22:30:11.7969859+02:00"
     description: Service for collecting SIGame games and packages statistics
     digest: 4a2f0621a249f19fc968bce8ef7a0334c64ac508ee63442710aae0be0b291fd1
     name: sistatistics
@@ -31,4 +41,4 @@ entries:
     urls:
     - sistatistics-1.0.0.tgz
     version: 1.0.0
-generated: "2023-05-26T22:17:05.7757897+02:00"
+generated: "2023-05-26T22:30:11.7942986+02:00"
