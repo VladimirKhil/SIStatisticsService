@@ -37,5 +37,6 @@ database:
   passwordValue: 'postgres-password'
 
 options:
-  topPackagesCount: 10
+  topPackageCount: 10
+  maxResultCount: 100
   logLevel: Warning

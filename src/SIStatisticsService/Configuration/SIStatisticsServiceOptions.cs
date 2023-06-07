@@ -7,5 +7,7 @@ public sealed class SIStatisticsServiceOptions
 {
     public const string ConfigurationSectionName = "SIStatistics";
 
-    public int TopPackagesCount { get; set; } = 10;
+    public int TopPackageCount { get; set; } = 10;
+
+    public int MaxResultCount { get; set; } = 100;
 }

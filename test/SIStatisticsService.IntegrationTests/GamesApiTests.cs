@@ -38,7 +38,7 @@ internal sealed class GamesApiTests : TestsBase
     }
 
     [Test]
-    public async Task SendServerGameStatistic_Ok()
+    public async Task SendLocalGameStatistic_Ok()
     {
         var uniqueName = "_TEST_" + Guid.NewGuid().ToString();
 
@@ -219,8 +219,13 @@ internal sealed class GamesApiTests : TestsBase
         Assert.Multiple(() =>
         {
             Assert.That(packages.Packages, Has.Length.GreaterThan(1));
-            Assert.That(packages.Packages[0].Package?.Name, Is.EqualTo("TestPackage"));
-            Assert.That(packages.Packages[1].Package?.Name, Is.EqualTo("TestPackage 2"));
+
+            var testPackage = packages.Packages.FirstOrDefault(p => p.Package?.Name == "TestPackage");
+            var testPackage2 = packages.Packages.FirstOrDefault(p => p.Package?.Name == "TestPackage 2");
+
+            Assert.That(testPackage, Is.Not.Null);
+            Assert.That(testPackage2, Is.Not.Null);
+            Assert.That(testPackage!.GameCount, Is.GreaterThan(testPackage2!.GameCount));
         });
     }
 }

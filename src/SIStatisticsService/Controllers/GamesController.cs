@@ -19,7 +19,7 @@ public sealed class GamesController : ControllerBase
     [HttpGet("results")]
     public async Task<ActionResult<GamesResponse>> GetLatestGamesInfoAsync(
         [FromQuery] StatisticFilter statisticFilter,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var games = await _gamesService.GetGamesByFilterAsync(statisticFilter, cancellationToken);
 
@@ -29,7 +29,7 @@ public sealed class GamesController : ControllerBase
     [HttpGet("stats")]
     public async Task<ActionResult<GamesStatistic>> GetLatestGamesStatisticAsync(
         [FromQuery] StatisticFilter statisticFilter,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var gamesStatistic = await _gamesService.GetGamesStatisticAsync(statisticFilter, cancellationToken);
 
@@ -39,7 +39,7 @@ public sealed class GamesController : ControllerBase
     [HttpGet("packages")]
     public async Task<ActionResult<PackagesStatistic>> GetLatestTopPackagesAsync(
         [FromQuery] StatisticFilter statisticFilter,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var packagesStatistic = await _gamesService.GetPackagesStatisticAsync(statisticFilter, cancellationToken);
 

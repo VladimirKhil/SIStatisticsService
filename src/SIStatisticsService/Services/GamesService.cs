@@ -49,7 +49,7 @@ public sealed class GamesService : IGamesService
                         Reviews = g.Reviews
                     };
 
-        return query.ToArrayAsync(cancellationToken);
+        return query.OrderByDescending(gri => gri.FinishTime).Take(_options.MaxResultCount).ToArrayAsync(cancellationToken);
     }
 
     public async Task<GamesStatistic> GetGamesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
@@ -95,7 +95,7 @@ public sealed class GamesService : IGamesService
 
         return new PackagesStatistic
         {
-            Packages = await query.Take(_options.TopPackagesCount).ToArrayAsync(cancellationToken)
+            Packages = await query.Take(_options.TopPackageCount).ToArrayAsync(cancellationToken)
         };
     }
 

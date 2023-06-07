@@ -45,8 +45,10 @@ spec:
                   key: '{{ .Values.database.passwordValue }}'
             - name: ConnectionStrings__SIStatistics
               value: 'Host={{ .Values.database.host }};Username={{ .Values.database.user }};Password=$(DBPASSWORD);Database={{ .Values.database.name }}'
-            - name: SIStatistics__TopPackagesCount
-              value: '{{ .Values.options.topPackagesCount }}'
+            - name: SIStatistics__TopPackageCount
+              value: '{{ .Values.options.topPackageCount }}'
+            - name: SIStatistics__MaxResultCount
+              value: '{{ .Values.options.maxResultCount }}'
             - name: Serilog__MinimumLevel
               value: '{{ .Values.options.logLevel }}'
           volumeMounts:

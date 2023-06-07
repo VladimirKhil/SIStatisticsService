@@ -8,15 +8,15 @@ public sealed class StatisticFilter
     /// <summary>
     /// Game platform.
     /// </summary>
-    public GamePlatforms Platform { get; set; }
+    public GamePlatforms Platform { get; set; } = GamePlatforms.GameServer;
 
     /// <summary>
     /// Start date.
     /// </summary>
-    public DateTimeOffset From { get; set; }
+    public DateTimeOffset From { get; set; } = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
 
     /// <summary>
     /// End date.
     /// </summary>
-    public DateTimeOffset To { get; set; }
+    public DateTimeOffset To { get; set; } = DateTimeOffset.UtcNow;
 }
