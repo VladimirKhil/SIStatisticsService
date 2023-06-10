@@ -72,6 +72,11 @@ public sealed class AdminController : ControllerBase
 
         await _gamesService.AddGameResultAsync(gameInfo, cancellationToken);
 
+        foreach (var questionReport in gameReport.QuestionReports)
+        {
+            await _packagesService.ImportQuestionReportAsync(questionReport, cancellationToken);
+        }
+
         return Accepted();
     }
 }

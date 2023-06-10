@@ -1,11 +1,9 @@
 ﻿using LinqToDB;
 using SIPackages;
-using SIPackages.Core;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
 using SIStatisticsService.Metrics;
-using System.Text;
 
 namespace SIStatisticsService.Services;
 
@@ -52,20 +50,7 @@ public sealed class PackagesService : IPackagesService
 
                 foreach (var question in theme.Questions)
                 {
-                    var questionText = new StringBuilder();
-
-                    foreach (var atom in question.Scenario)
-                    {
-                        if (atom.Type == AtomTypes.Text || atom.Type == AtomTypes.Oral)
-                        {
-                            if (questionText.Length > 0)
-                            {
-                                questionText.AppendLine();
-                            }
-
-                            questionText.Append(atom.Text);
-                        }
-                    }
+                    var questionText = question.GetText();
 
                     var questionId = await InsertQuestionTextAsync(questionText.ToString(), cancellationToken);
 
@@ -87,6 +72,19 @@ public sealed class PackagesService : IPackagesService
         _metrics.AddPackage();
     }
 
+    public async Task ImportQuestionReportAsync(QuestionReport questionReport, CancellationToken cancellationToken)
+    {
+        var themeId = await InsertThemeNameAsync(questionReport.ThemeName ?? "", cancellationToken);
+        var questionId = await InsertQuestionTextAsync(questionReport.QuestionText ?? "", cancellationToken);
+
+        await InsertOrUpdateAnswer(
+            themeId,
+            questionId,
+            questionReport.ReportText ?? "",
+            ReverseMapType(questionReport.ReportType),
+            cancellationToken);
+    }
+
     private static RelationType MapType(Database.Models.Questions.RelationType type) =>
         type switch
         {
@@ -96,6 +94,16 @@ public sealed class PackagesService : IPackagesService
             Database.Models.Questions.RelationType.Accepted => RelationType.Accepted,
             Database.Models.Questions.RelationType.Rejected => RelationType.Rejected,
             Database.Models.Questions.RelationType.Complained => RelationType.Complained,
+            _ => throw new NotSupportedException()
+        };
+
+    private static Database.Models.Questions.RelationType ReverseMapType(QuestionReportType type) =>
+        type switch
+        {
+            QuestionReportType.Apellated => Database.Models.Questions.RelationType.Apellated,
+            QuestionReportType.Accepted => Database.Models.Questions.RelationType.Accepted,
+            QuestionReportType.Rejected => Database.Models.Questions.RelationType.Rejected,
+            QuestionReportType.Complained => Database.Models.Questions.RelationType.Complained,
             _ => throw new NotSupportedException()
         };
 
@@ -116,6 +124,7 @@ public sealed class PackagesService : IPackagesService
 
         if (updatedRowCount > 0)
         {
+            _metrics.AddQuestions();
             return;
         }
 
@@ -129,6 +138,8 @@ public sealed class PackagesService : IPackagesService
                 Type = relationType
             },
         cancellationToken);
+
+        _metrics.AddQuestions();
     }
 
     private async Task<int> InsertEntityAsync(string entityName, CancellationToken cancellationToken)

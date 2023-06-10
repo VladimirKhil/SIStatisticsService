@@ -13,7 +13,7 @@ Service accept game and package info. It returns information about latest finish
 ## Docker
 
 
-    docker run -p 5000:5000 vladimirkhil/sistatisticsservice:1.0.4
+    docker run -p 5000:5000 vladimirkhil/sistatisticsservice:1.0.8
 
 
 ## Helm
@@ -21,5 +21,5 @@ Service accept game and package info. It returns information about latest finish
 
     dependencies:
     - name: sistatistics
-      version: "1.0.4"
+      version: "1.0.6"
       repository: "https://vladimirkhil.github.io/SIStatisticsService/helm/repo"

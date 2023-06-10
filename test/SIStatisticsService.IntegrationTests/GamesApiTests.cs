@@ -228,4 +228,102 @@ internal sealed class GamesApiTests : TestsBase
             Assert.That(testPackage!.GameCount, Is.GreaterThan(testPackage2!.GameCount));
         });
     }
+
+    [Test]
+    public async Task SendLocalGame_QuestionReports_Ok()
+    {
+        var uniqueName = "_TEST_" + Guid.NewGuid().ToString();
+
+        var gameResultInfo = new GameResultInfo
+        {
+            FinishTime = DateTimeOffset.UtcNow,
+            Duration = TimeSpan.FromMinutes(40),
+            Name = uniqueName,
+            Package = new PackageInfo
+            {
+                Name = "TestPackage",
+                Hash = "1",
+                Authors = new[] { "TestAuthor" }
+            },
+            Platform = GamePlatforms.Local,
+            Results = new Dictionary<string, int>
+            {
+                ["Alice"] = 1999,
+                ["Bob"] = 2,
+                ["Clara"] = -1700
+            },
+            Reviews = new Dictionary<string, string>
+            {
+                ["Alice"] = "A lot of fun"
+            }
+        };
+
+        var gameReport = new GameReport
+        {
+            Info = gameResultInfo,
+            QuestionReports = new QuestionReport[]
+            {
+                new QuestionReport
+                {
+                    ThemeName = "Test theme",
+                    QuestionText = "Test question",
+                    ReportText = "Test accept",
+                    ReportType = QuestionReportType.Accepted
+                },
+                new QuestionReport
+                {
+                    ThemeName = "Test theme",
+                    QuestionText = "Test question",
+                    ReportText = "Test reject",
+                    ReportType = QuestionReportType.Rejected
+                },
+                new QuestionReport
+                {
+                    ThemeName = "Test theme",
+                    QuestionText = "Test question",
+                    ReportText = "Test apellate",
+                    ReportType = QuestionReportType.Apellated
+                },
+                new QuestionReport
+                {
+                    ThemeName = "Test theme",
+                    QuestionText = "Test question",
+                    ReportText = "Test complain",
+                    ReportType = QuestionReportType.Complained
+                },
+            }
+        };
+
+        await SIStatisticsClient.SendGameReportAsync(gameReport);
+
+        var questionInfo = await SIStatisticsClient.GetQuestionInfoAsync("Test theme", "Test question");
+
+        Assert.That(questionInfo, Is.Not.Null);
+
+        Assert.That(questionInfo.Entities.Count, Is.GreaterThanOrEqualTo(4));
+
+        var accepted = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test accept");
+        Assert.That(accepted, Is.Not.Null);
+
+        Assert.That(accepted, Has.Count.GreaterThanOrEqualTo(1));
+        Assert.That(accepted.RelationType, Is.EqualTo(RelationType.Accepted));
+
+        var rejected = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test reject");
+        Assert.That(rejected, Is.Not.Null);
+
+        Assert.That(rejected, Has.Count.GreaterThanOrEqualTo(1));
+        Assert.That(rejected.RelationType, Is.EqualTo(RelationType.Rejected));
+
+        var appellated = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test apellate");
+        Assert.That(appellated, Is.Not.Null);
+
+        Assert.That(appellated, Has.Count.GreaterThanOrEqualTo(1));
+        Assert.That(appellated.RelationType, Is.EqualTo(RelationType.Apellated));
+
+        var complained = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test complain");
+        Assert.That(complained, Is.Not.Null);
+
+        Assert.That(complained, Has.Count.GreaterThanOrEqualTo(1));
+        Assert.That(complained.RelationType, Is.EqualTo(RelationType.Complained));
+    }
 }

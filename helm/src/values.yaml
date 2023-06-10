@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: vladimirkhil/sistatisticsservice
   pullPolicy: IfNotPresent
-  tag: "1.0.4"
+  tag: "1.0.8"
 
 nameOverride: ""
 fullnameOverride: ""

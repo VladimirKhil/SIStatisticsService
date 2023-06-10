@@ -22,4 +22,11 @@ public interface IPackagesService
     /// <param name="package">Package data.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task ImportPackageAsync(Package package, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Imports question report.
+    /// </summary>
+    /// <param name="questionReport">Question report.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task ImportQuestionReportAsync(QuestionReport questionReport, CancellationToken cancellationToken);
 }

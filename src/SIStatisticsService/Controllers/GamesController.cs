@@ -13,8 +13,13 @@ namespace SIStatisticsService.Controllers;
 public sealed class GamesController : ControllerBase
 {
     private readonly IGamesService _gamesService;
+    private readonly IPackagesService _packagesService;
 
-    public GamesController(IGamesService gamesService) => _gamesService = gamesService;
+    public GamesController(IGamesService gamesService, IPackagesService packagesService)
+    {
+        _gamesService = gamesService;
+        _packagesService = packagesService;
+    }
 
     [HttpGet("results")]
     public async Task<ActionResult<GamesResponse>> GetLatestGamesInfoAsync(
@@ -63,6 +68,11 @@ public sealed class GamesController : ControllerBase
         }
 
         await _gamesService.AddGameResultAsync(gameInfo, cancellationToken);
+
+        foreach (var questionReport in gameReport.QuestionReports)
+        {
+            await _packagesService.ImportQuestionReportAsync(questionReport, cancellationToken);
+        }
 
         return Accepted();
     }
