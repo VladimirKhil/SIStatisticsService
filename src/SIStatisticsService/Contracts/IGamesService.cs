@@ -12,26 +12,26 @@ public interface IGamesService
     /// </summary>
     /// <param name="statisticFilter">History filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<GameResultInfo[]> GetGamesByFilterAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken);
+    Task<GameResultInfo[]> GetGamesByFilterAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds new game result record.
     /// </summary>
     /// <param name="gameResult">Game result.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task AddGameResultAsync(GameResultInfo gameResult, CancellationToken cancellationToken);
+    Task AddGameResultAsync(GameResultInfo gameResult, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets cumulative latest games statistic.
     /// </summary>
     /// <param name="statisticFilter">Statistic filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<GamesStatistic> GetGamesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken);
+    Task<GamesStatistic> GetGamesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get cumulative latest played packages statistic.
     /// </summary>
     /// <param name="statisticFilter">Statistic filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken);
+    Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken = default);
 }

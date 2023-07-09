@@ -6,6 +6,11 @@
 public sealed class GameReport
 {
     /// <summary>
+    /// Unique report identifier.
+    /// </summary>
+    public Guid? Id { get; set; }
+
+    /// <summary>
     /// Game info.
     /// </summary>
     public GameResultInfo? Info { get; set; }

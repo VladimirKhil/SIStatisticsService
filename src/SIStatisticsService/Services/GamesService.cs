@@ -126,24 +126,24 @@ public sealed class GamesService : IGamesService
 
     private async Task<int> InsertOrUpdatePackageAsync(PackageInfo packageInfo, CancellationToken cancellationToken)
     {
-        var package = await _connection.Packages
-            .Where(p => p.Name == packageInfo.Name && p.Hash == packageInfo.Hash)
-            .FirstOrDefaultAsync(cancellationToken);
+        await _connection.Packages.InsertOrUpdateAsync(
+            () => new PackageModel
+            {
+                Name = packageInfo.Name,
+                Hash = packageInfo.Hash,
+                Authors = packageInfo.Authors
+            },
+            null,
+            () => new PackageModel
+            {
+                Name = packageInfo.Name,
+                Hash = packageInfo.Hash,
+                Authors = packageInfo.Authors
+            },
+            cancellationToken);
 
-        if (package == null)
-        {
-            var packageId = (int?)await _connection.Packages.InsertWithIdentityAsync(
-                () => new PackageModel
-                {
-                    Name = packageInfo.Name,
-                    Hash = packageInfo.Hash,
-                    Authors = packageInfo.Authors
-                },
-                cancellationToken);
-
-            return packageId == null ? throw new Exception($"Could not insert package {packageInfo.Name}") : packageId.Value;
-        }
-
-        return package.Id;
+        return (await _connection.Packages.FirstAsync(
+            p => p.Name == packageInfo.Name && p.Hash == packageInfo.Hash && p.Authors == packageInfo.Authors,
+            token: cancellationToken)).Id;
     }
 }

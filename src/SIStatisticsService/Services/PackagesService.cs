@@ -116,19 +116,7 @@ public sealed class PackagesService : IPackagesService
     {
         var entityId = await InsertEntityAsync(answer, cancellationToken);
 
-        var updatedRowCount = await _connection.Relations
-            .Where(
-                rm => rm.ThemeId == themeId && rm.QuestionId == questionId && rm.EntityId == entityId && rm.Type == relationType)
-            .Set(rm => rm.Count, rm => rm.Count + 1)
-            .UpdateAsync(cancellationToken);
-
-        if (updatedRowCount > 0)
-        {
-            _metrics.AddQuestions();
-            return;
-        }
-
-        await _connection.Relations.InsertWithInt32IdentityAsync(
+        await _connection.Relations.InsertOrUpdateAsync(
             () => new Database.Models.Questions.RelationModel
             {
                 ThemeId = themeId,
@@ -137,50 +125,74 @@ public sealed class PackagesService : IPackagesService
                 Count = 1,
                 Type = relationType
             },
-        cancellationToken);
+            relation => new Database.Models.Questions.RelationModel
+            {
+                ThemeId = themeId,
+                QuestionId = questionId,
+                EntityId = entityId,
+                Count = relation.Count + 1,
+                Type = relationType
+            },
+            () => new Database.Models.Questions.RelationModel
+            {
+                ThemeId = themeId,
+                QuestionId = questionId,
+                EntityId = entityId,
+                Type = relationType
+            },
+            cancellationToken);
 
         _metrics.AddQuestions();
     }
 
     private async Task<int> InsertEntityAsync(string entityName, CancellationToken cancellationToken)
     {
-        var existingEntityId = (await _connection.Entities.FirstOrDefaultAsync(e => e.Name == entityName, token: cancellationToken))?.Id;
-
-        var entityId = existingEntityId ?? await _connection.Entities.InsertWithInt32IdentityAsync(
+        await _connection.Entities.InsertOrUpdateAsync(
+            () => new Database.Models.Questions.EntityModel
+            {
+                Name = entityName
+            },
+            null,
             () => new Database.Models.Questions.EntityModel
             {
                 Name = entityName
             },
             cancellationToken);
 
-        return entityId;
+        return (await _connection.Entities.FirstAsync(e => e.Name == entityName, token: cancellationToken)).Id;
     }
 
     private async Task<int> InsertQuestionTextAsync(string questionText, CancellationToken cancellationToken)
     {
-        var existingQuestionId = (await _connection.Questions.FirstOrDefaultAsync(q => q.Text == questionText, token: cancellationToken))?.Id;
-
-        var questionId = existingQuestionId ?? await _connection.Questions.InsertWithInt32IdentityAsync(
+        await _connection.Questions.InsertOrUpdateAsync(
+            () => new Database.Models.Questions.QuestionModel
+            {
+                Text = questionText
+            },
+            null,
             () => new Database.Models.Questions.QuestionModel
             {
                 Text = questionText
             },
             cancellationToken);
 
-        return questionId;
+        return (await _connection.Questions.FirstAsync(q => q.Text == questionText, token: cancellationToken)).Id;
     }
 
     private async Task<int> InsertThemeNameAsync(string themeName, CancellationToken cancellationToken)
     {
-        var existingThemeId = (await _connection.Themes.FirstOrDefaultAsync(t => t.Name == themeName, token: cancellationToken))?.Id;
-
-        var themeId = existingThemeId ?? await _connection.Themes.InsertWithInt32IdentityAsync(
+        await _connection.Themes.InsertOrUpdateAsync(
+            () => new Database.Models.Questions.ThemeModel
+            {
+                Name = themeName
+            },
+            null,
             () => new Database.Models.Questions.ThemeModel
             {
                 Name = themeName
             },
             cancellationToken);
 
-        return themeId;
+        return (await _connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
 }
