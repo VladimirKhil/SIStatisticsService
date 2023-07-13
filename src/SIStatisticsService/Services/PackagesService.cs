@@ -3,6 +3,7 @@ using SIPackages;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
+using SIStatisticsService.Helpers;
 using SIStatisticsService.Metrics;
 
 namespace SIStatisticsService.Services;
@@ -21,16 +22,18 @@ public sealed class PackagesService : IPackagesService
 
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
     {
-        var query = from t in _connection.Themes.Where(theme => theme.Name == themeName)
-                    from q in _connection.Questions.Where(question => question.Text == questionText)
-                    from e in _connection.Entities
-                    from r in _connection.Relations.Where(rel => rel.ThemeId == t.Id && rel.QuestionId == q.Id && rel.EntityId == e.Id)
-                    select new EntityInfoResponse
-                    {
-                        EntityName = e.Name,
-                        RelationType = MapType(r.Type),
-                        Count = r.Count
-                    };
+        var query =
+            from r in _connection.Relations
+            join t in _connection.Themes on r.ThemeId equals t.Id
+            join q in _connection.Questions on r.QuestionId equals q.Id
+            join e in _connection.Entities on r.EntityId equals e.Id
+            where t.Name == themeName && q.Text == questionText
+            select new EntityInfoResponse
+            {
+                EntityName = e.Name,
+                RelationType = MapType(r.Type),
+                Count = r.Count
+            };
 
         return new QuestionInfoResponse
         {
@@ -52,7 +55,7 @@ public sealed class PackagesService : IPackagesService
                 {
                     var questionText = question.GetText();
 
-                    var questionId = await InsertQuestionTextAsync(questionText.ToString(), cancellationToken);
+                    var questionId = await InsertQuestionTextAsync(questionText, cancellationToken);
 
                     foreach (var answer in question.Right)
                     {
@@ -147,6 +150,8 @@ public sealed class PackagesService : IPackagesService
 
     private async Task<int> InsertEntityAsync(string entityName, CancellationToken cancellationToken)
     {
+        entityName = ValueNormalizer.Normalize(entityName);
+
         await _connection.Entities.InsertOrUpdateAsync(
             () => new Database.Models.Questions.EntityModel
             {
@@ -164,6 +169,8 @@ public sealed class PackagesService : IPackagesService
 
     private async Task<int> InsertQuestionTextAsync(string questionText, CancellationToken cancellationToken)
     {
+        questionText = ValueNormalizer.Normalize(questionText);
+
         await _connection.Questions.InsertOrUpdateAsync(
             () => new Database.Models.Questions.QuestionModel
             {
@@ -181,6 +188,8 @@ public sealed class PackagesService : IPackagesService
 
     private async Task<int> InsertThemeNameAsync(string themeName, CancellationToken cancellationToken)
     {
+        themeName = ValueNormalizer.Normalize(themeName);
+
         await _connection.Themes.InsertOrUpdateAsync(
             () => new Database.Models.Questions.ThemeModel
             {
