@@ -2,31 +2,31 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-	<SignAssembly>true</SignAssembly>
-	<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
-	<Description>SIStatisticsService contract</Description>
-	<Copyright>Copyright © Khil-soft 2023</Copyright>
-	<PackageProjectUrl>https://github.com/VladimirKhil/SIStatisticsService</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/VladimirKhil/SIStatisticsService</RepositoryUrl>
-	<PackageTags>SIStatisticsService</PackageTags>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageId>VKhil.SIStatisticsService.Contract</PackageId>
-	<Version>1.0.2</Version>
-	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+    <Description>SIStatisticsService contract</Description>
+    <Copyright>Copyright © Khil-soft 2023</Copyright>
+    <PackageProjectUrl>https://github.com/VladimirKhil/SIStatisticsService</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VladimirKhil/SIStatisticsService</RepositoryUrl>
+    <PackageTags>SIStatisticsService</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageId>VKhil.SIStatisticsService.Contract</PackageId>
+    <Version>1.0.3</Version>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DebugType>none</DebugType>
-		<DebugSymbols>false</DebugSymbols>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

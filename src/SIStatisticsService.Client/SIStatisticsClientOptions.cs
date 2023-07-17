@@ -31,4 +31,9 @@ public sealed class SIStatisticsClientOptions
     /// Retry count policy.
     /// </summary>
     public int RetryCount { get; set; } = DefaultRetryCount;
+
+    /// <summary>
+    /// Client timeout.
+    /// </summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 }

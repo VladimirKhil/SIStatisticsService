@@ -29,8 +29,13 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<ISIStatisticsServiceClient, SIStatisticsServiceClient>(
             client =>
             {
-                var serviceUri = options?.ServiceUri;
-                client.BaseAddress = serviceUri != null ? new Uri(serviceUri, "api/v1/") : null;
+                if (options != null)
+                {
+                    var serviceUri = options.ServiceUri;
+                    client.BaseAddress = serviceUri != null ? new Uri(serviceUri, "api/v1/") : null;
+                    client.Timeout = options.Timeout;
+                }
+
                 client.DefaultRequestVersion = HttpVersion.Version20;
 
                 if (options != null)
