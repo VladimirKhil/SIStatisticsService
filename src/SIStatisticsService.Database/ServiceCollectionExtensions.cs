@@ -1,6 +1,7 @@
-﻿using LinqToDB.AspNet;
+﻿using LinqToDB;
+using LinqToDB.AspNet;
 using LinqToDB.AspNet.Logging;
-using LinqToDB.Configuration;
+using LinqToDB.Data.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +23,10 @@ public static class ServiceCollectionExtensions
         var dbConnectionString = configuration.GetConnectionString(connectionStringName);
 
         services.AddLinqToDBContext<SIStatisticsDbConnection>((provider, options) =>
-            options.UsePostgreSQL(dbConnectionString).UseDefaultLogging(provider));
+            options
+                .UsePostgreSQL(dbConnectionString)
+                .UseRetryPolicy(new TransientRetryPolicy())
+                .UseDefaultLogging(provider));
 
         DatabaseExtensions.InitJsonConversion<string[]>();
         DatabaseExtensions.InitJsonConversion<Dictionary<string, int>>();

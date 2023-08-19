@@ -43,8 +43,6 @@ public sealed class PackagesService : IPackagesService
 
     public async Task ImportPackageAsync(Package package, CancellationToken cancellationToken)
     {
-        using var tx = await _connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, cancellationToken);
-
         foreach (var round in package.Rounds)
         {
             foreach (var theme in round.Themes)
@@ -69,8 +67,6 @@ public sealed class PackagesService : IPackagesService
                 }
             }
         }
-
-        await tx.CommitAsync(cancellationToken);
 
         _metrics.AddPackage();
     }

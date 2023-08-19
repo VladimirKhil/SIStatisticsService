@@ -8,8 +8,8 @@
 
   <ItemGroup>
 	<PackageReference Include="FluentMigrator.Runner" Version="3.3.2" />
-	<PackageReference Include="linq2db.AspNet" Version="4.3.0" />
-	<PackageReference Include="Npgsql" Version="7.0.0" />
+	<PackageReference Include="linq2db.AspNet" Version="5.2.2" />
+	<PackageReference Include="Npgsql" Version="7.0.4" />
   </ItemGroup>
 
 </Project>

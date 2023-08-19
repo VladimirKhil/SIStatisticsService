@@ -1,5 +1,4 @@
 ﻿using LinqToDB;
-using LinqToDB.Configuration;
 using LinqToDB.Data;
 using SIStatisticsService.Database.Models.Games;
 using SIStatisticsService.Database.Models.Questions;
@@ -11,7 +10,7 @@ namespace SIStatisticsService.Database;
 /// </summary>
 public sealed class SIStatisticsDbConnection : DataConnection
 {
-    public SIStatisticsDbConnection(LinqToDBConnectionOptions<SIStatisticsDbConnection> options) : base(options) { }
+    public SIStatisticsDbConnection(DataOptions dataOptions) : base(dataOptions) { }
 
     /// <summary>
     /// Common entities.
