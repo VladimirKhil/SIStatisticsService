@@ -1,4 +1,5 @@
 ﻿using LinqToDB;
+using Npgsql;
 using SIPackages;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
@@ -13,11 +14,13 @@ public sealed class PackagesService : IPackagesService
 {
     private readonly SIStatisticsDbConnection _connection;
     private readonly OtelMetrics _metrics;
+    private readonly ILogger<PackagesService> _logger;
 
-    public PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics)
+    public PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics, ILogger<PackagesService> logger)
     {
         _connection = connection;
         _metrics = metrics;
+        _logger = logger;
     }
 
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
@@ -148,17 +151,25 @@ public sealed class PackagesService : IPackagesService
     {
         entityName = ValueNormalizer.Normalize(entityName);
 
-        await _connection.Entities.InsertOrUpdateAsync(
-            () => new Database.Models.Questions.EntityModel
-            {
-                Name = entityName
-            },
-            null,
-            () => new Database.Models.Questions.EntityModel
-            {
-                Name = entityName
-            },
-            cancellationToken);
+        try
+        {
+            await _connection.Entities.InsertOrUpdateAsync(
+                () => new Database.Models.Questions.EntityModel
+                {
+                    Name = entityName
+                },
+                null,
+                () => new Database.Models.Questions.EntityModel
+                {
+                    Name = entityName
+                },
+                cancellationToken);
+        }
+        catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
+        {
+            LogLimit(entityName, exc);
+            throw;
+        }
 
         return (await _connection.Entities.FirstAsync(e => e.Name == entityName, token: cancellationToken)).Id;
     }
@@ -167,17 +178,25 @@ public sealed class PackagesService : IPackagesService
     {
         questionText = ValueNormalizer.Normalize(questionText);
 
-        await _connection.Questions.InsertOrUpdateAsync(
-            () => new Database.Models.Questions.QuestionModel
-            {
-                Text = questionText
-            },
-            null,
-            () => new Database.Models.Questions.QuestionModel
-            {
-                Text = questionText
-            },
-            cancellationToken);
+        try
+        {
+            await _connection.Questions.InsertOrUpdateAsync(
+                () => new Database.Models.Questions.QuestionModel
+                {
+                    Text = questionText
+                },
+                null,
+                () => new Database.Models.Questions.QuestionModel
+                {
+                    Text = questionText
+                },
+                cancellationToken);
+        }
+        catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
+        {
+            LogLimit(questionText, exc);
+            throw;
+        }
 
         return (await _connection.Questions.FirstAsync(q => q.Text == questionText, token: cancellationToken)).Id;
     }
@@ -186,18 +205,29 @@ public sealed class PackagesService : IPackagesService
     {
         themeName = ValueNormalizer.Normalize(themeName);
 
-        await _connection.Themes.InsertOrUpdateAsync(
-            () => new Database.Models.Questions.ThemeModel
-            {
-                Name = themeName
-            },
-            null,
-            () => new Database.Models.Questions.ThemeModel
-            {
-                Name = themeName
-            },
-            cancellationToken);
+        try
+        {
+            await _connection.Themes.InsertOrUpdateAsync(
+                () => new Database.Models.Questions.ThemeModel
+                {
+                    Name = themeName
+                },
+                null,
+                () => new Database.Models.Questions.ThemeModel
+                {
+                    Name = themeName
+                },
+                cancellationToken);
+        }
+        catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
+        {
+            LogLimit(themeName, exc);
+            throw;
+        }
 
         return (await _connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
+
+    private void LogLimit(string text, PostgresException exc) =>
+        _logger.LogWarning(exc, "Limit exceeded. Text: {text}, text length: {textLength}", text, text.Length);
 }
