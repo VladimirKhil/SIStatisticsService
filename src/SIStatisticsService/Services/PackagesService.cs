@@ -4,6 +4,7 @@ using SIPackages;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
+using SIStatisticsService.Exceptions;
 using SIStatisticsService.Helpers;
 using SIStatisticsService.Metrics;
 
@@ -50,13 +51,32 @@ public sealed class PackagesService : IPackagesService
         {
             foreach (var theme in round.Themes)
             {
-                var themeId = await InsertThemeNameAsync(theme.Name, cancellationToken);
+                int themeId;
+
+                try
+                {
+                    themeId = await InsertThemeNameAsync(theme.Name, cancellationToken);
+                }
+                catch (LimitExceedException)
+                {
+                    _metrics.AddLimitExceed();
+                    continue;
+                }
 
                 foreach (var question in theme.Questions)
                 {
                     var questionText = question.GetText();
+                    int questionId;
 
-                    var questionId = await InsertQuestionTextAsync(questionText, cancellationToken);
+                    try
+                    {
+                        questionId = await InsertQuestionTextAsync(questionText, cancellationToken);
+                    }
+                    catch (LimitExceedException)
+                    {
+                        _metrics.AddLimitExceed();
+                        continue;
+                    }
 
                     foreach (var answer in question.Right)
                     {
@@ -76,8 +96,18 @@ public sealed class PackagesService : IPackagesService
 
     public async Task ImportQuestionReportAsync(QuestionReport questionReport, CancellationToken cancellationToken)
     {
-        var themeId = await InsertThemeNameAsync(questionReport.ThemeName ?? "", cancellationToken);
-        var questionId = await InsertQuestionTextAsync(questionReport.QuestionText ?? "", cancellationToken);
+        int themeId, questionId;
+
+        try
+        {
+            themeId = await InsertThemeNameAsync(questionReport.ThemeName ?? "", cancellationToken);
+            questionId = await InsertQuestionTextAsync(questionReport.QuestionText ?? "", cancellationToken);
+        }
+        catch (LimitExceedException)
+        {
+            _metrics.AddLimitExceed();
+            return;
+        }
 
         await InsertOrUpdateAnswer(
             themeId,
@@ -116,7 +146,17 @@ public sealed class PackagesService : IPackagesService
         Database.Models.Questions.RelationType relationType,
         CancellationToken cancellationToken)
     {
-        var entityId = await InsertEntityAsync(answer, cancellationToken);
+        int entityId;
+
+        try
+        {
+            entityId = await InsertEntityAsync(answer, cancellationToken);
+        }
+        catch (LimitExceedException)
+        {
+            _metrics.AddLimitExceed();
+            return;
+        }
 
         await _connection.Relations.InsertOrUpdateAsync(
             () => new Database.Models.Questions.RelationModel
@@ -168,7 +208,7 @@ public sealed class PackagesService : IPackagesService
         catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
         {
             LogLimit(entityName, exc);
-            throw;
+            throw new LimitExceedException(exc);
         }
 
         return (await _connection.Entities.FirstAsync(e => e.Name == entityName, token: cancellationToken)).Id;
@@ -195,7 +235,7 @@ public sealed class PackagesService : IPackagesService
         catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
         {
             LogLimit(questionText, exc);
-            throw;
+            throw new LimitExceedException(exc);
         }
 
         return (await _connection.Questions.FirstAsync(q => q.Text == questionText, token: cancellationToken)).Id;
@@ -222,12 +262,12 @@ public sealed class PackagesService : IPackagesService
         catch (PostgresException exc) when (exc.SqlState == PostgresErrorCodes.ProgramLimitExceeded)
         {
             LogLimit(themeName, exc);
-            throw;
+            throw new LimitExceedException(exc);
         }
 
         return (await _connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
 
     private void LogLimit(string text, PostgresException exc) =>
-        _logger.LogWarning(exc, "Limit exceeded. Text: {text}, text length: {textLength}", text, text.Length);
+        _logger.LogInformation(exc, "Limit exceeded. Text: {text}, text length: {textLength}", text, text.Length);
 }

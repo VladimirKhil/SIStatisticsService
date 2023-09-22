@@ -13,6 +13,8 @@ public sealed class OtelMetrics
 
     private Counter<int> UploadedQuestionsCounter { get; }
 
+    private Counter<int> LimitExceedCounter { get; }
+
     public string MeterName { get; }
 
     public OtelMetrics(string meterName = "SIStatistics")
@@ -23,6 +25,7 @@ public sealed class OtelMetrics
         UploadedGameReportsCounter = meter.CreateCounter<int>("game-reports-uploaded");
         UploadedPackagesCounter = meter.CreateCounter<int>("packages-content-uploaded");
         UploadedQuestionsCounter = meter.CreateCounter<int>("question-reports-uploaded");
+        LimitExceedCounter = meter.CreateCounter<int>("liit-exceed");
     }
 
     public void AddGameReport() => UploadedGameReportsCounter.Add(1);
@@ -30,4 +33,6 @@ public sealed class OtelMetrics
     public void AddPackage() => UploadedPackagesCounter.Add(1);
 
     public void AddQuestions(int count = 1) => UploadedQuestionsCounter.Add(count);
+
+    public void AddLimitExceed() => LimitExceedCounter.Add(1);
 }
