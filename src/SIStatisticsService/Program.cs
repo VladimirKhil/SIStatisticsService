@@ -15,7 +15,9 @@ using System.Data.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
+builder.Host.UseSerilog((ctx, lc) => lc
+    .ReadFrom.Configuration(ctx.Configuration)
+    .Filter.ByExcluding(logEvent => logEvent.Exception is Npgsql.PostgresException && logEvent.MessageTemplate.Text.Contains("index row size")));
 
 ConfigureServices(builder.Services, builder.Configuration);
 

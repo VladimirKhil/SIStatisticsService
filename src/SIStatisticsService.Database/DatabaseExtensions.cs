@@ -1,7 +1,7 @@
-﻿using FluentMigrator.Builders.Create.Table;
-using FluentMigrator.Builders;
-using Npgsql;
+﻿using FluentMigrator.Builders;
+using FluentMigrator.Builders.Create.Table;
 using LinqToDB.Mapping;
+using Npgsql;
 using System.Text.Json;
 
 namespace SIStatisticsService.Database;
