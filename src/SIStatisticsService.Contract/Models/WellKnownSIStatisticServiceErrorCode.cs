@@ -29,4 +29,9 @@ public enum WellKnownSIStatisticServiceErrorCode
     /// Unsupported game platform.
     /// </summary>
     UnsupportedPlatform,
+
+    /// <summary>
+    /// Invalid Duration value.
+    /// </summary>
+    InvalidDuration,
 }

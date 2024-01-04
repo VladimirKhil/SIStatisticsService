@@ -5,6 +5,7 @@ using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
 using SIStatisticsService.Database.Models.Games;
+using SIStatisticsService.Helpers;
 using SIStatisticsService.Metrics;
 
 namespace SIStatisticsService.Services;
@@ -70,7 +71,7 @@ public sealed class GamesService : IGamesService
         return new GamesStatistic
         {
             GameCount = results.Length,
-            TotalDuration = results.Select(r => r.Duration).Aggregate(TimeSpan.Zero, (value, result) => value + result)
+            TotalDuration = results.Select(r => r.Duration).Aggregate(TimeSpan.Zero, TimeSpanHelper.AddTimeSpan)
         };
     }
 

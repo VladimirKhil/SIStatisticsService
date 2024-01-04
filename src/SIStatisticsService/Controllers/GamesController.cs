@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SIStatisticsService.Configuration;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Exceptions;
@@ -14,11 +16,16 @@ public sealed class GamesController : ControllerBase
 {
     private readonly IGamesService _gamesService;
     private readonly IPackagesService _packagesService;
+    private readonly SIStatisticsServiceOptions _options;
 
-    public GamesController(IGamesService gamesService, IPackagesService packagesService)
+    public GamesController(
+        IGamesService gamesService,
+        IPackagesService packagesService,
+        IOptions<SIStatisticsServiceOptions> options)
     {
         _gamesService = gamesService;
         _packagesService = packagesService;
+        _options = options.Value;
     }
 
     [HttpGet("results")]
@@ -65,6 +72,11 @@ public sealed class GamesController : ControllerBase
         if (DateTimeOffset.UtcNow.Subtract(gameInfo.FinishTime).TotalHours > 1.0)
         {
             throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime, System.Net.HttpStatusCode.BadRequest);
+        }
+
+        if (gameInfo.Duration < TimeSpan.Zero || gameInfo.Duration > _options.MaximumGameDuration)
+        {
+            throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidDuration, System.Net.HttpStatusCode.BadRequest);
         }
 
         await _gamesService.AddGameResultAsync(gameInfo, cancellationToken);
