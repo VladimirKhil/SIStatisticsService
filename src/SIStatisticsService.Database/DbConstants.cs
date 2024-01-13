@@ -18,4 +18,5 @@ public static class DbConstants
 
     public const string Packages = nameof(Packages);
     public const string Games = nameof(Games);
+    public const string Languages = nameof(Languages);
 }

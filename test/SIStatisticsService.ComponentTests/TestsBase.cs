@@ -31,6 +31,7 @@ internal abstract class TestsBase
         services.AddSingleton(meters);
 
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        services.AddSingleton<ILogger<PackagesService>, NullLogger<PackagesService>>();
         services.AddTransient<IGamesService, GamesService>();
         services.AddTransient<IPackagesService, PackagesService>();
 

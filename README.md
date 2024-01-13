@@ -2,7 +2,7 @@
 
 Service for collecting SIGame games and packages statistics.
 
-Service accept game and package info. It returns information about latest finished games and overall game statistic for some platform.
+Service accepts game and package info. It returns information about latest finished games and overall game statistic for some platform and language.
 
 # Build
 
@@ -13,7 +13,7 @@ Service accept game and package info. It returns information about latest finish
 ## Docker
 
 
-    docker run -p 5000:5000 vladimirkhil/sistatisticsservice:1.0.8
+    docker run -p 5000:5000 vladimirkhil/sistatisticsservice:1.0.15
 
 
 ## Helm

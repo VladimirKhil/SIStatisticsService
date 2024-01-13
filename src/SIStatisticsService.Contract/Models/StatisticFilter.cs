@@ -19,4 +19,14 @@ public sealed class StatisticFilter
     /// End date.
     /// </summary>
     public DateTimeOffset To { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Game language code.
+    /// </summary>
+    public string? LanguageCode { get; set; }
+
+    /// <summary>
+    /// Maximum result count.
+    /// </summary>
+    public int? Count { get; set; }
 }

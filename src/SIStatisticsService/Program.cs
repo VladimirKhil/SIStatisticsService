@@ -2,6 +2,7 @@ using AspNetCoreRateLimit;
 using EnsureThat;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Conventions;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using Serilog;
@@ -18,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, lc) => lc
     .ReadFrom.Configuration(ctx.Configuration)
     .Filter.ByExcluding(logEvent =>
-        logEvent.Exception is Npgsql.PostgresException && logEvent.MessageTemplate.Text.Contains("index row size")
+        logEvent.Exception is PostgresException pe && (logEvent.MessageTemplate.Text.Contains("index row size") || pe.SqlState == PostgresErrorCodes.QueryCanceled)
         || logEvent.Exception is BadHttpRequestException
         || logEvent.Exception is OperationCanceledException));
 

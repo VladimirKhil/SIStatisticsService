@@ -3,20 +3,8 @@
 /// <summary>
 /// Represents a game package info.
 /// </summary>
-public sealed class PackageInfo
-{
-    /// <summary>
-    /// Game package name.
-    /// </summary>
-    public string? Name { get; set; }
-
-    /// <summary>
-    /// Game package hash.
-    /// </summary>
-    public string? Hash { get; set; }
-
-    /// <summary>
-    /// Game package authors.
-    /// </summary>
-    public string[] Authors { get; set; } = Array.Empty<string>();
-}
+/// <param name="Name">Package name.</param>
+/// <param name="Hash">Package hash.</param>
+/// <param name="Authors">Package authors.</param>
+/// <param name="AuthorsContacts">Package author contacts.</param>
+public sealed record PackageInfo(string? Name, string? Hash, string[] Authors, string? AuthorsContacts = null);

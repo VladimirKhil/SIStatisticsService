@@ -3,7 +3,9 @@
 /// <summary>
 /// Defines game result info.
 /// </summary>
-public sealed class GameResultInfo
+/// <param name="Package">Game package info.</param>
+/// <param name="LanguageCode">Game language code.</param>
+public sealed record GameResultInfo(PackageInfo Package, string? LanguageCode = null)
 {
     /// <summary>
     /// Game name.
@@ -24,11 +26,6 @@ public sealed class GameResultInfo
     /// Game duration.
     /// </summary>
     public TimeSpan Duration { get; set; } = TimeSpan.Zero;
-
-    /// <summary>
-    /// Game package info.
-    /// </summary>
-    public PackageInfo Package { get; set; } = new();
 
     /// <summary>
     /// Game results: player names and their scores.

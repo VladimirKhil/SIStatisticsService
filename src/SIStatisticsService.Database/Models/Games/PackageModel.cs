@@ -32,4 +32,10 @@ public sealed class PackageModel
     /// </summary>
     [Column(DataType = DataType.BinaryJson), NotNull]
     public string[] Authors { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Package author contacts.
+    /// </summary>
+    [Column(DataType = DataType.NVarChar), Nullable]
+    public string? AuthorsContacts { get; set; }
 }

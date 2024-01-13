@@ -1,4 +1,5 @@
-﻿using SIStatisticsService.Client;
+﻿using NUnit.Framework.Legacy;
+using SIStatisticsService.Client;
 using SIStatisticsService.Contract.Models;
 
 namespace SIStatisticsService.IntegrationTests;
@@ -10,16 +11,11 @@ internal sealed class GamesApiTests : TestsBase
     {
         var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() => SIStatisticsClient.SendGameReportAsync(new GameReport
         {
-            Info = new GameResultInfo
+            Info = new GameResultInfo(new PackageInfo("TestPackage", null, new[] { "TestAuthor" }))
             {
                 FinishTime = new DateTimeOffset(2023, 3, 18, 12, 0, 0, TimeSpan.Zero),
                 Duration = TimeSpan.FromMinutes(40),
                 Name = "TestGame",
-                Package = new PackageInfo
-                {
-                    Name = "TestPackage",
-                    Authors = new[] { "TestAuthor" }
-                },
                 Platform = GamePlatforms.Local,
                 Results = new Dictionary<string, int>
                 {
@@ -42,17 +38,11 @@ internal sealed class GamesApiTests : TestsBase
     {
         var uniqueName = "_TEST_" + Guid.NewGuid().ToString();
 
-        var gameResultInfo = new GameResultInfo
+        var gameResultInfo = new GameResultInfo(new PackageInfo("TestPackage", "1", new[] { "TestAuthor" }))
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMinutes(40),
             Name = uniqueName,
-            Package = new PackageInfo
-            {
-                Name = "TestPackage",
-                Hash = "1",
-                Authors = new[] { "TestAuthor" }
-            },
             Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
@@ -73,17 +63,16 @@ internal sealed class GamesApiTests : TestsBase
 
         await SIStatisticsClient.SendGameReportAsync(gameReport);
 
-        var gameResultInfo2 = new GameResultInfo
+        for (int i = 0; i < 8; i++)
+        {
+            await AddPackageGamesAsync("TestPackage");
+        }
+
+        var gameResultInfo2 = new GameResultInfo(new PackageInfo("TestPackage 2", "2", new[] { "TestAuthor 2" }))
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMinutes(10),
             Name = uniqueName + "_2",
-            Package = new PackageInfo
-            {
-                Name = "TestPackage 2",
-                Hash = "2",
-                Authors = new[] { "TestAuthor 2" }
-            },
             Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
@@ -102,17 +91,16 @@ internal sealed class GamesApiTests : TestsBase
 
         await SIStatisticsClient.SendGameReportAsync(gameReport2);
 
-        var gameResultInfo3 = new GameResultInfo
+        for (int i = 0; i < 4; i++)
+        {
+            await AddPackageGamesAsync("TestPackage 2");
+        }
+
+        var gameResultInfo3 = new GameResultInfo(new PackageInfo("TestPackage", "1", new[] { "TestAuthor" }))
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromHours(1),
             Name = uniqueName + "_3",
-            Package = new PackageInfo
-            {
-                Name = "TestPackage",
-                Hash = "1",
-                Authors = new[] { "TestAuthor" }
-            },
             Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
@@ -133,17 +121,11 @@ internal sealed class GamesApiTests : TestsBase
 
         await SIStatisticsClient.SendGameReportAsync(gameReport3);
 
-        var gameResultInfo4 = new GameResultInfo
+        var gameResultInfo4 = new GameResultInfo(new PackageInfo("TestPackage", "1", new[] { "TestAuthor" }))
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromHours(2),
             Name = uniqueName + "_4",
-            Package = new PackageInfo
-            {
-                Name = "TestPackage",
-                Hash = "1",
-                Authors = new[] { "TestAuthor" }
-            },
             Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
@@ -229,22 +211,36 @@ internal sealed class GamesApiTests : TestsBase
         });
     }
 
+    private Task AddPackageGamesAsync(string packageName)
+    {
+        var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", new[] { "TestAuthor 2" }))
+        {
+            FinishTime = DateTimeOffset.UtcNow,
+            Duration = TimeSpan.FromMinutes(10),
+            Name = "_TEST_" + Guid.NewGuid().ToString(),
+            Platform = GamePlatforms.Local,
+            Results = new Dictionary<string, int>(),
+            Reviews = new Dictionary<string, string>()
+        };
+
+        var gameReport2 = new GameReport
+        {
+            Info = gameResultInfo2
+        };
+
+        return SIStatisticsClient.SendGameReportAsync(gameReport2);
+    }
+
     [Test]
     public async Task SendLocalGame_QuestionReports_Ok()
     {
         var uniqueName = "_TEST_" + Guid.NewGuid().ToString();
 
-        var gameResultInfo = new GameResultInfo
+        var gameResultInfo = new GameResultInfo(new PackageInfo("TestPackage", "1", new[] { "TestAuthor" }))
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMinutes(40),
             Name = uniqueName,
-            Package = new PackageInfo
-            {
-                Name = "TestPackage",
-                Hash = "1",
-                Authors = new[] { "TestAuthor" }
-            },
             Platform = GamePlatforms.Local,
             Results = new Dictionary<string, int>
             {
@@ -263,28 +259,28 @@ internal sealed class GamesApiTests : TestsBase
             Info = gameResultInfo,
             QuestionReports = new QuestionReport[]
             {
-                new QuestionReport
+                new()
                 {
                     ThemeName = "Test theme",
                     QuestionText = "Test question",
                     ReportText = "Test accept",
                     ReportType = QuestionReportType.Accepted
                 },
-                new QuestionReport
+                new()
                 {
                     ThemeName = "Test theme",
                     QuestionText = "Test question",
                     ReportText = "Test reject",
                     ReportType = QuestionReportType.Rejected
                 },
-                new QuestionReport
+                new()
                 {
                     ThemeName = "Test theme",
                     QuestionText = "Test question",
                     ReportText = "Test apellate",
                     ReportType = QuestionReportType.Apellated
                 },
-                new QuestionReport
+                new()
                 {
                     ThemeName = "Test theme",
                     QuestionText = "Test question",

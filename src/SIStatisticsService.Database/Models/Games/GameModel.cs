@@ -16,6 +16,12 @@ public sealed class GameModel
     public int Id { get; set; }
 
     /// <summary>
+    /// Game language identifier.
+    /// </summary>
+    [Column(DataType = DataType.Int32), Nullable]
+    public int? LanguageId { get; set; }
+
+    /// <summary>
     /// Game name.
     /// </summary>
     [Column(DataType = DataType.NVarChar), NotNull]

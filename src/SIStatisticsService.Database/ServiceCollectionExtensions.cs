@@ -4,6 +4,7 @@ using LinqToDB.AspNet.Logging;
 using LinqToDB.Data.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SIStatisticsService.Database;
 
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds SIStatistics database to service collection.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(SIStatisticsDbConnection))]
     public static void AddSIStatisticsDatabase(
         this IServiceCollection services,
         IConfiguration configuration,

@@ -41,4 +41,9 @@ public sealed class SIStatisticsDbConnection : DataConnection
     /// Themes.
     /// </summary>
     public ITable<ThemeModel> Themes => this.GetTable<ThemeModel>();
+
+    /// <summary>
+    /// Game languages.
+    /// </summary>
+    public ITable<LanguageModel> Languages => this.GetTable<LanguageModel>();
 }

@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   postgres:
-    image: "postgres:latest"
+    image: postgres:15.0
     ports:
       - 5432:5432
     volumes:
@@ -11,7 +11,7 @@ services:
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-    
+
   sistatistics:
     image: vladimirkhil/sistatisticsservice:${SERVICE_TAG}
     ports:
