@@ -11,7 +11,7 @@
     <PackageTags>SIStatisticsService</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageId>VKhil.SIStatisticsService.Contract</PackageId>
-    <Version>1.0.3</Version>
+    <Version>1.1.1</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

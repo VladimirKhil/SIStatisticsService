@@ -1,5 +1,4 @@
-﻿using NUnit.Framework.Legacy;
-using SIStatisticsService.Client;
+﻿using SIStatisticsService.Client;
 using SIStatisticsService.Contract.Models;
 
 namespace SIStatisticsService.IntegrationTests;
@@ -162,14 +161,14 @@ internal sealed class GamesApiTests : TestsBase
             Assert.That(gameResult.Duration, Is.EqualTo(gameResultInfo.Duration));
             Assert.That(gameResult.Name, Is.EqualTo(gameResultInfo.Name));
             Assert.That(gameResult.Package.Name, Is.EqualTo(gameResultInfo.Package.Name));
-            CollectionAssert.AreEquivalent(gameResult.Package.Authors, gameResultInfo.Package.Authors);
+            Assert.That(gameResultInfo.Package.Authors, Is.EquivalentTo(gameResult.Package.Authors));
             Assert.That(gameResult.Platform, Is.EqualTo(gameResultInfo.Platform));
             Assert.That(gameResult.Results.Count, Is.EqualTo(gameResultInfo.Results.Count));
-            CollectionAssert.AreEquivalent(gameResult.Results.Keys, gameResultInfo.Results.Keys);
-            CollectionAssert.AreEquivalent(gameResult.Results.Values, gameResultInfo.Results.Values);
+            Assert.That(gameResultInfo.Results.Keys, Is.EquivalentTo(gameResult.Results.Keys));
+            Assert.That(gameResultInfo.Results.Values, Is.EquivalentTo(gameResult.Results.Values));
             Assert.That(gameResult.Reviews, Is.EqualTo(gameResultInfo.Reviews));
-            CollectionAssert.AreEquivalent(gameResult.Reviews.Keys, gameResultInfo.Reviews.Keys);
-            CollectionAssert.AreEquivalent(gameResult.Reviews.Values, gameResultInfo.Reviews.Values);
+            Assert.That(gameResultInfo.Reviews.Keys, Is.EquivalentTo(gameResult.Reviews.Keys));
+            Assert.That(gameResultInfo.Reviews.Values, Is.EquivalentTo(gameResult.Reviews.Values));
         });
 
         var statistic = await SIStatisticsClient.GetLatestGamesStatisticAsync(
@@ -321,5 +320,38 @@ internal sealed class GamesApiTests : TestsBase
 
         Assert.That(complained, Has.Count.GreaterThanOrEqualTo(1));
         Assert.That(complained.RelationType, Is.EqualTo(RelationType.Complained));
+    }
+
+    [Test]
+    public async Task GetLatestGame_Ok()
+    {
+        var statistics = await SIStatisticsClient.GetLatestGamesInfoAsync(new StatisticFilter
+        {
+            From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
+            To = DateTimeOffset.UtcNow,
+            Platform = GamePlatforms.GameServer,
+            Count = 1
+        });
+
+        Assert.That(statistics, Is.Not.Null);
+        Assert.That(statistics.Results, Has.Length.EqualTo(1));
+    }
+
+    [TestCase("ru")]
+    [TestCase("en")]
+    public async Task GetLatestGame_LanguageCode_Ok(string languageCode)
+    {
+        var statistics = await SIStatisticsClient.GetLatestGamesInfoAsync(new StatisticFilter
+        {
+            From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)),
+            To = DateTimeOffset.UtcNow,
+            Platform = GamePlatforms.GameServer,
+            Count = 1,
+            LanguageCode = languageCode
+        });
+
+        Assert.That(statistics, Is.Not.Null);
+        Assert.That(statistics.Results, Has.Length.EqualTo(1));
+        Assert.That(statistics.Results[0].LanguageCode, Is.EqualTo(languageCode));
     }
 }

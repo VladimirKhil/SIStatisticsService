@@ -18,10 +18,57 @@ test('Get latest games', async () => {
 		platform: GamePlatforms.GameServer,
 		from: new Date(now.getTime() - ONE_HOUR),
 		to: now,
+		count: 5,
 	});
 
 	expect(statistics).not.toBeNull();
 	expect(statistics.results.length).toBeGreaterThanOrEqual(5);
+});
+
+test('Get latest game', async () => {
+	const now = new Date();
+
+	const statistics = await siStatisticsClient.getLatestGamesInfoAsync({
+		platform: GamePlatforms.GameServer,
+		from: new Date(now.getTime() - ONE_HOUR),
+		to: now,
+		count: 1,
+	});
+
+	expect(statistics).not.toBeNull();
+	expect(statistics.results.length).toBe(1);
+});
+
+test('Get latest Russian game', async () => {
+	const now = new Date();
+
+	const statistics = await siStatisticsClient.getLatestGamesInfoAsync({
+		platform: GamePlatforms.GameServer,
+		from: new Date(now.getTime() - ONE_HOUR),
+		to: now,
+		count: 1,
+		languageCode: 'ru',
+	});
+
+	expect(statistics).not.toBeNull();
+	expect(statistics.results.length).toBe(1);
+	expect(statistics.results[0].languageCode).toBe('ru');
+});
+
+test('Get latest English game', async () => {
+	const now = new Date();
+
+	const statistics = await siStatisticsClient.getLatestGamesInfoAsync({
+		platform: GamePlatforms.GameServer,
+		from: new Date(now.getTime() - ONE_HOUR),
+		to: now,
+		count: 1,
+		languageCode: 'en',
+	});
+
+	expect(statistics).not.toBeNull();
+	expect(statistics.results.length).toBe(1);
+	expect(statistics.results[0].languageCode).toBe('en');
 });
 
 test('Get games statistics', async () => {
@@ -31,6 +78,7 @@ test('Get games statistics', async () => {
 		platform: GamePlatforms.GameServer,
 		from: new Date(now.getTime() - ONE_HOUR),
 		to: now,
+		count: 5,
 	});
 
 	expect(statistics).not.toBeNull();
@@ -44,6 +92,7 @@ test('Get packages statistics', async () => {
 		platform: GamePlatforms.GameServer,
 		from: new Date(now.getTime() - ONE_HOUR),
 		to: now,
+		count: 5,
 	});
 
 	expect(statistics).not.toBeNull();

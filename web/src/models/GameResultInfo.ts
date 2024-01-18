@@ -9,6 +9,9 @@ export default interface GameResultInfo {
 	/** Game platform. */
 	platform: GamePlatforms;
 
+	/** Game language code. */
+	languageCode: string;
+
 	/** Game finish time. */
 	finishTime: Date;
 

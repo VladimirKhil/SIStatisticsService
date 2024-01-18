@@ -8,4 +8,7 @@ export default interface PackageInfo {
 
 	/** Game package authors. */
 	authors: string[];
+
+	/** Package author contacts. */
+	authorsContacts: string;
 }

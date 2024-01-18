@@ -83,12 +83,27 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
         return _client.GetFromJsonAsync<T>(uri + (queryString.Length > 0 ? '?' + queryString : ""), cancellationToken);
     }
 
-    private static Dictionary<string, object> BuildFilter(StatisticFilter filter) => new()
+    private static Dictionary<string, object> BuildFilter(StatisticFilter filter)
     {
-        ["platform"] = filter.Platform,
-        ["from"] = filter.From.ToString("yyyy-MM-ddTHH:mm:sszzz"),
-        ["to"] = filter.To.ToString("yyyy-MM-ddTHH:mm:sszzz")
-    };
+        var result = new Dictionary<string, object>()
+        {
+            ["platform"] = filter.Platform,
+            ["from"] = filter.From.ToString("yyyy-MM-ddTHH:mm:sszzz"),
+            ["to"] = filter.To.ToString("yyyy-MM-ddTHH:mm:sszzz")
+        };
+
+        if (filter.Count.HasValue)
+        {
+            result["count"] = filter.Count.Value;
+        }
+
+        if (filter.LanguageCode != null)
+        {
+            result["languageCode"] = filter.LanguageCode;
+        }
+
+        return result;
+    }
 
     private static async Task<SIStatisticsClientException> GetErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {

@@ -34,7 +34,8 @@ export default class SIStatisticsClient {
 	}
 
 	private buildFilter(filter: StatisticFilter) {
-		return `?platform=${filter.platform}&from=${filter.from.toISOString()}&to=${filter.to.toISOString()}`;
+		const languageFilter = filter.languageCode ? '&languageCode=' + filter.languageCode : '';
+		return `?platform=${filter.platform}&from=${filter.from.toISOString()}&to=${filter.to.toISOString()}&count=${filter.count}${languageFilter}`;
 	}
 
 	/**

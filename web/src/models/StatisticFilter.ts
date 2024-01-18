@@ -10,4 +10,10 @@ export default interface StatisticFilter {
 
 	/** End date. */
 	to: Date;
+
+	/** Game language code. */
+	languageCode?: string;
+
+	/** Maximum result count. */
+	count: number;
 }
