@@ -210,9 +210,9 @@ internal sealed class GamesApiTests : TestsBase
         });
     }
 
-    private Task AddPackageGamesAsync(string packageName)
+    private Task AddPackageGamesAsync(string packageName, string? languageCode = null)
     {
-        var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", new[] { "TestAuthor 2" }))
+        var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", new[] { "TestAuthor 2" }), languageCode)
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMinutes(10),
@@ -325,11 +325,13 @@ internal sealed class GamesApiTests : TestsBase
     [Test]
     public async Task GetLatestGame_Ok()
     {
+        await AddPackageGamesAsync("GetLatestGame_Ok");
+
         var statistics = await SIStatisticsClient.GetLatestGamesInfoAsync(new StatisticFilter
         {
             From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
             To = DateTimeOffset.UtcNow,
-            Platform = GamePlatforms.GameServer,
+            Platform = GamePlatforms.Local,
             Count = 1
         });
 
@@ -341,11 +343,13 @@ internal sealed class GamesApiTests : TestsBase
     [TestCase("en")]
     public async Task GetLatestGame_LanguageCode_Ok(string languageCode)
     {
+        await AddPackageGamesAsync("GetLatestGame_LanguageCode_Ok", languageCode);
+
         var statistics = await SIStatisticsClient.GetLatestGamesInfoAsync(new StatisticFilter
         {
             From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)),
             To = DateTimeOffset.UtcNow,
-            Platform = GamePlatforms.GameServer,
+            Platform = GamePlatforms.Local,
             Count = 1,
             LanguageCode = languageCode
         });

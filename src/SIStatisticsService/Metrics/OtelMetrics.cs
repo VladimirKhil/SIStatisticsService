@@ -7,6 +7,8 @@ namespace SIStatisticsService.Metrics;
 /// </summary>
 public sealed class OtelMetrics
 {
+    public const string MeterName = "SIStatistics";
+
     private Counter<int> UploadedGameReportsCounter { get; }
 
     private Counter<int> UploadedPackagesCounter { get; }
@@ -15,12 +17,9 @@ public sealed class OtelMetrics
 
     private Counter<int> LimitExceedCounter { get; }
 
-    public string MeterName { get; }
-
-    public OtelMetrics(string meterName = "SIStatistics")
+    public OtelMetrics(IMeterFactory meterFactory)
     {
-        var meter = new Meter(meterName);
-        MeterName = meterName;
+        var meter = meterFactory.Create(MeterName);
 
         UploadedGameReportsCounter = meter.CreateCounter<int>("game-reports-uploaded");
         UploadedPackagesCounter = meter.CreateCounter<int>("packages-content-uploaded");

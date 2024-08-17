@@ -17,6 +17,8 @@ using System.Data.Common;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, lc) => lc
+    .WriteTo.Console(new Serilog.Formatting.Display.MessageTemplateTextFormatter(
+        "[{Timestamp:yyyy/MM/dd HH:mm:ss} {Level}] {Message:lj} {Exception}{NewLine}"))
     .ReadFrom.Configuration(ctx.Configuration)
     .Filter.ByExcluding(logEvent =>
         logEvent.Exception is PostgresException pe && (logEvent.MessageTemplate.Text.Contains("index row size") || pe.SqlState == PostgresErrorCodes.QueryCanceled)
@@ -76,8 +78,6 @@ static void Configure(WebApplication app)
     ApplyMigrations(app);
 
     app.UseIpRateLimiting();
-
-    app.UseOpenTelemetryPrometheusScrapingEndpoint();
 }
 
 static void AddRateLimits(IServiceCollection services, IConfiguration configuration)
@@ -91,18 +91,16 @@ static void AddRateLimits(IServiceCollection services, IConfiguration configurat
 
 static void AddMetrics(IServiceCollection services)
 {
-    var meters = new OtelMetrics();
+    services.AddSingleton<OtelMetrics>();
 
     services.AddOpenTelemetry().WithMetrics(builder =>
         builder
             .ConfigureResource(rb => rb.AddService("SIStatistics"))
-            .AddMeter(meters.MeterName)
+            .AddMeter(OtelMetrics.MeterName)
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddPrometheusExporter());
-
-    services.AddSingleton(meters);
+            .AddOtlpExporter());
 }
 
 static void CreateDatabase(WebApplication app)

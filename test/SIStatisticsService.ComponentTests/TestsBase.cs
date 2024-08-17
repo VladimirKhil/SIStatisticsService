@@ -27,8 +27,8 @@ internal abstract class TestsBase
 
         services.AddSIStatisticsDatabase(configuration);
 
-        var meters = new OtelMetrics();
-        services.AddSingleton(meters);
+        services.AddMetrics();
+        services.AddSingleton<OtelMetrics>();
 
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
         services.AddSingleton<ILogger<PackagesService>, NullLogger<PackagesService>>();

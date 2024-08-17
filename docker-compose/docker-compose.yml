@@ -15,7 +15,7 @@ services:
   sistatistics:
     image: vladimirkhil/sistatisticsservice:${SERVICE_TAG}
     ports:
-      - 5057:5000
+      - 5057:8080
     volumes:
       - ./log:/app/log
     environment:
