@@ -1,0 +1,45 @@
+{{- if .Values.database.backup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "sistatistics.fullname" . }}-postgres-backup
+spec:
+  schedule: {{ .Values.database.backup.schedule }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          securityContext:
+            {{- toYaml .Values.database.backup.securityContext | nindent 12 }}
+          volumes:
+            - name: backup-volume
+              hostPath:
+                path: '{{- toYaml .Values.database.backup.volumePath }}'
+                type: Directory
+          containers:
+            - name: postgres-backup
+              image: postgres:{{ .Values.database.backup.imageVersion }}
+              env:
+                - name: POSTGRES_HOST
+                  value: {{ .Values.database.host }}
+                - name: POSTGRES_PORT
+                  value: '{{ .Values.database.port }}'
+                - name: POSTGRES_USER
+                  value: {{ .Values.database.user }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: '{{ .Values.database.passwordKey }}'
+                      key: '{{ .Values.database.passwordValue }}'
+                - name: POSTGRES_DATABASE
+                  value: {{ .Values.database.name }}
+                - name: BACKUP_FILENAME
+                  value: "backup-$(date +'%Y%m%d%H%M%S').tar"
+              volumeMounts:
+                - name: backup-volume
+                  mountPath: /backup
+              command: ["bash"]
+              args: ["-c", "pg_dump -h $(POSTGRES_HOST) -p $(POSTGRES_PORT) -U $(POSTGRES_USER) -F t $(POSTGRES_DATABASE) > /backup/$(POSTGRES_DATABASE)-$(BACKUP_FILENAME); find /backup -mtime +7 -exec rm {} \\;"]
+          restartPolicy: OnFailure
+{{- end }}

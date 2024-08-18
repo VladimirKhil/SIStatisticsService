@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: vladimirkhil/sistatisticsservice
   pullPolicy: IfNotPresent
-  tag: "1.0.8"
+  tag: 1.2.0
 
 nameOverride: ""
 fullnameOverride: ""
@@ -35,8 +35,18 @@ database:
   user: 'postgres'
   passwordKey: ''
   passwordValue: 'postgres-password'
+  backup:
+    enabled: false
+    schedule: '0 0 * * *' # Run every day at midnight
+    imageVersion: 15
+    securityContext: {}
+    volumePath: ''
 
 options:
   topPackageCount: 10
   maxResultCount: 100
   logLevel: Warning
+  otel:
+    uri: 'http://localhost:4317'
+    metric:
+      exportInterval: 60000
