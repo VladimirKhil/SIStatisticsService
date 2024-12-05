@@ -27,10 +27,9 @@ ingress:
 
 resources: {}
 
-logPath: ''
-
 database:
   host: ''
+  port: 5432
   name: 'sistatistics'
   user: 'postgres'
   passwordKey: ''
