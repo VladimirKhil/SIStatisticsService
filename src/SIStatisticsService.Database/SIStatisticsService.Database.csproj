@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="FluentMigrator.Runner" Version="5.2.0" />
+	<PackageReference Include="FluentMigrator.Runner" Version="6.2.0" />
 	<PackageReference Include="linq2db.AspNet" Version="5.4.1" />
 	<PackageReference Include="Npgsql" Version="7.0.7" />
   </ItemGroup>

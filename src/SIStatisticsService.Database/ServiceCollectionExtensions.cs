@@ -22,7 +22,8 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration,
         string connectionStringName = "SIStatistics")
     {
-        var dbConnectionString = configuration.GetConnectionString(connectionStringName);
+        var dbConnectionString = configuration.GetConnectionString(connectionStringName)
+            ?? throw new InvalidOperationException("Database connection is undefined");
 
         services.AddLinqToDBContext<SIStatisticsDbConnection>((provider, options) =>
             options

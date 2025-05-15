@@ -7,4 +7,4 @@
 /// <param name="Hash">Package hash.</param>
 /// <param name="Authors">Package authors.</param>
 /// <param name="AuthorsContacts">Package author contacts.</param>
-public sealed record PackageInfo(string? Name, string? Hash, string[] Authors, string? AuthorsContacts = null);
+public sealed record PackageInfo(string? Name, string Hash, string[] Authors, string? AuthorsContacts = null);

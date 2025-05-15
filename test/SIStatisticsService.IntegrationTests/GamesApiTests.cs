@@ -358,4 +358,74 @@ internal sealed class GamesApiTests : TestsBase
         Assert.That(statistics.Results, Has.Length.EqualTo(1));
         Assert.That(statistics.Results[0].LanguageCode, Is.EqualTo(languageCode));
     }
+
+    [Test]
+    public void SendGameReport_EmptyInfo_Fail()
+    {
+        var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() => SIStatisticsClient.SendGameReportAsync(new GameReport()));
+        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound));
+    }
+
+    [Test]
+    public void SendGameReport_NoPlatform_Fail()
+    {
+        var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() =>
+            SIStatisticsClient.SendGameReportAsync(new GameReport
+            {
+                Info = new GameResultInfo(new PackageInfo("", "", []))
+            }));
+
+        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+    }
+
+    [Test]
+    public void SendGameReport_GameServerPlatform_Fail()
+    {
+        var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() =>
+            SIStatisticsClient.SendGameReportAsync(new GameReport
+            {
+                Info = new GameResultInfo(new PackageInfo("", "", []))
+                {
+                    Platform = GamePlatforms.GameServer,
+                }
+            }));
+
+        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+    }
+
+    [Test]
+    public void SendGameReport_NoFinishTime_Fail()
+    {
+        var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() =>
+            SIStatisticsClient.SendGameReportAsync(new GameReport
+            {
+                Info = new GameResultInfo(new PackageInfo("", "", []))
+                {
+                    Platform = GamePlatforms.Local,
+                }
+            }));
+
+        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime));
+    }
+
+    [Test]
+    public void SendGameReport_NullHash_Fail()
+    {
+        var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() =>
+            SIStatisticsClient.SendGameReportAsync(new GameReport
+            {
+                Info = new GameResultInfo(new PackageInfo("", null!, []))
+                {
+                    Platform = GamePlatforms.Local,
+                    FinishTime = DateTimeOffset.UtcNow,
+                }
+            }));
+
+        // TODO: provide richer error message
+        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.Unknown));
+    }
 }

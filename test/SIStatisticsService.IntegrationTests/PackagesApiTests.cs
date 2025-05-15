@@ -16,18 +16,18 @@ internal sealed class PackagesApiTests : TestsBase
 
         Assert.That(questionInfo, Is.Not.Null);
 
-        Assert.That(questionInfo.Entities.Count, Is.EqualTo(4));
+        Assert.That(questionInfo!.Entities.Count, Is.EqualTo(4));
 
         var right1 = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Right answer 1");
         Assert.That(right1, Is.Not.Null);
 
         Assert.That(right1, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(right1.RelationType, Is.EqualTo(RelationType.Right));
+        Assert.That(right1!.RelationType, Is.EqualTo(RelationType.Right));
 
         var wrong1 = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Wrong answer 1");
         Assert.That(wrong1, Is.Not.Null);
 
         Assert.That(wrong1, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(wrong1.RelationType, Is.EqualTo(RelationType.Wrong));
+        Assert.That(wrong1!.RelationType, Is.EqualTo(RelationType.Wrong));
     }
 }

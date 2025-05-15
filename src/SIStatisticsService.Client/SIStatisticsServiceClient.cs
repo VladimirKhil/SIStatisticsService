@@ -113,7 +113,7 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
         {
             var error = JsonSerializer.Deserialize<SIStatisticServiceError>(serverError, SerializerOptions);
 
-            if (error != null)
+            if (error != null && error.ErrorCode != WellKnownSIStatisticServiceErrorCode.Unknown)
             {
                 return new SIStatisticsClientException { ErrorCode = error.ErrorCode, StatusCode = response.StatusCode };
             }

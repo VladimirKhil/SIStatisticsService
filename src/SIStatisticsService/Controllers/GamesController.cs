@@ -12,28 +12,19 @@ namespace SIStatisticsService.Controllers;
 /// </summary>
 [Route("api/v1/games")]
 [ApiController]
-public sealed class GamesController : ControllerBase
+public sealed class GamesController(
+    IGamesService gamesService,
+    IPackagesService packagesService,
+    IOptions<SIStatisticsServiceOptions> options) : ControllerBase
 {
-    private readonly IGamesService _gamesService;
-    private readonly IPackagesService _packagesService;
-    private readonly SIStatisticsServiceOptions _options;
-
-    public GamesController(
-        IGamesService gamesService,
-        IPackagesService packagesService,
-        IOptions<SIStatisticsServiceOptions> options)
-    {
-        _gamesService = gamesService;
-        _packagesService = packagesService;
-        _options = options.Value;
-    }
+    private readonly SIStatisticsServiceOptions _options = options.Value;
 
     [HttpGet("results")]
     public async Task<ActionResult<GamesResponse>> GetLatestGamesInfoAsync(
         [FromQuery] StatisticFilter statisticFilter,
         CancellationToken cancellationToken = default)
     {
-        var games = await _gamesService.GetGamesByFilterAsync(statisticFilter, cancellationToken);
+        var games = await gamesService.GetGamesByFilterAsync(statisticFilter, cancellationToken);
 
         return Ok(new GamesResponse { Results = games });
     }
@@ -43,7 +34,7 @@ public sealed class GamesController : ControllerBase
         [FromQuery] StatisticFilter statisticFilter,
         CancellationToken cancellationToken = default)
     {
-        var gamesStatistic = await _gamesService.GetGamesStatisticAsync(statisticFilter, cancellationToken);
+        var gamesStatistic = await gamesService.GetGamesStatisticAsync(statisticFilter, cancellationToken);
 
         return Ok(gamesStatistic);
     }
@@ -53,7 +44,7 @@ public sealed class GamesController : ControllerBase
         [FromQuery] StatisticFilter statisticFilter,
         CancellationToken cancellationToken = default)
     {
-        var packagesStatistic = await _gamesService.GetPackagesStatisticAsync(statisticFilter, cancellationToken);
+        var packagesStatistic = await gamesService.GetPackagesStatisticAsync(statisticFilter, cancellationToken);
 
         return Ok(packagesStatistic);
     }
@@ -79,11 +70,11 @@ public sealed class GamesController : ControllerBase
             throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidDuration, System.Net.HttpStatusCode.BadRequest);
         }
 
-        await _gamesService.AddGameResultAsync(gameInfo, cancellationToken);
+        await gamesService.AddGameResultAsync(gameInfo, cancellationToken);
 
         foreach (var questionReport in gameReport.QuestionReports)
         {
-            await _packagesService.ImportQuestionReportAsync(questionReport, cancellationToken);
+            await packagesService.ImportQuestionReportAsync(questionReport, cancellationToken);
         }
 
         return Accepted();

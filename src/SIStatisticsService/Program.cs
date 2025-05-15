@@ -19,6 +19,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, lc) => lc
     .WriteTo.Console(new Serilog.Formatting.Display.MessageTemplateTextFormatter(
         "[{Timestamp:yyyy/MM/dd HH:mm:ss} {Level}] {Message:lj} {Exception}{NewLine}"))
+    .WriteTo.OpenTelemetry(options => options.ResourceAttributes = new Dictionary<string, object>
+    {
+        ["service.name"] = "SIStatistics"
+    })
     .ReadFrom.Configuration(ctx.Configuration)
     .Filter.ByExcluding(logEvent =>
         logEvent.Exception is PostgresException pe && (logEvent.MessageTemplate.Text.Contains("index row size") || pe.SqlState == PostgresErrorCodes.QueryCanceled)
