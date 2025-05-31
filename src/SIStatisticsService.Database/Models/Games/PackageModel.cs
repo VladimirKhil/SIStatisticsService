@@ -25,7 +25,7 @@ public sealed class PackageModel
     /// Package hash.
     /// </summary>
     [Column(DataType = DataType.NVarChar), NotNull]
-    public string? Hash { get; set; }
+    public string Hash { get; set; } = "";
 
     /// <summary>
     /// Package authors.
@@ -38,4 +38,10 @@ public sealed class PackageModel
     /// </summary>
     [Column(DataType = DataType.NVarChar), Nullable]
     public string? AuthorsContacts { get; set; }
+
+    /// <summary>
+    /// Marks the package as hidden.
+    /// </summary>
+    [Column(DataType = DataType.Boolean), NotNull]
+    public bool Hidden { get; set; } = false;
 }

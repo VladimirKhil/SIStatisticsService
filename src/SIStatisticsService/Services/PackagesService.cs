@@ -11,26 +11,15 @@ using SIStatisticsService.Metrics;
 namespace SIStatisticsService.Services;
 
 /// <inheritdoc cref="IPackagesService" />
-public sealed class PackagesService : IPackagesService
+public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics, ILogger<PackagesService> logger) : IPackagesService
 {
-    private readonly SIStatisticsDbConnection _connection;
-    private readonly OtelMetrics _metrics;
-    private readonly ILogger<PackagesService> _logger;
-
-    public PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics, ILogger<PackagesService> logger)
-    {
-        _connection = connection;
-        _metrics = metrics;
-        _logger = logger;
-    }
-
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
     {
         var query =
-            from r in _connection.Relations
-            join t in _connection.Themes on r.ThemeId equals t.Id
-            join q in _connection.Questions on r.QuestionId equals q.Id
-            join e in _connection.Entities on r.EntityId equals e.Id
+            from r in connection.Relations
+            join t in connection.Themes on r.ThemeId equals t.Id
+            join q in connection.Questions on r.QuestionId equals q.Id
+            join e in connection.Entities on r.EntityId equals e.Id
             where t.Name == themeName && q.Text == questionText
             select new EntityInfoResponse
             {
@@ -59,7 +48,7 @@ public sealed class PackagesService : IPackagesService
                 }
                 catch (LimitExceedException)
                 {
-                    _metrics.AddLimitExceed();
+                    metrics.AddLimitExceed();
                     continue;
                 }
 
@@ -74,7 +63,7 @@ public sealed class PackagesService : IPackagesService
                     }
                     catch (LimitExceedException)
                     {
-                        _metrics.AddLimitExceed();
+                        metrics.AddLimitExceed();
                         continue;
                     }
 
@@ -91,7 +80,7 @@ public sealed class PackagesService : IPackagesService
             }
         }
 
-        _metrics.AddPackage();
+        metrics.AddPackage();
     }
 
     public async Task ImportQuestionReportAsync(QuestionReport questionReport, CancellationToken cancellationToken)
@@ -105,7 +94,7 @@ public sealed class PackagesService : IPackagesService
         }
         catch (LimitExceedException)
         {
-            _metrics.AddLimitExceed();
+            metrics.AddLimitExceed();
             return;
         }
 
@@ -154,11 +143,11 @@ public sealed class PackagesService : IPackagesService
         }
         catch (LimitExceedException)
         {
-            _metrics.AddLimitExceed();
+            metrics.AddLimitExceed();
             return;
         }
 
-        await _connection.Relations.InsertOrUpdateAsync(
+        await connection.Relations.InsertOrUpdateAsync(
             () => new Database.Models.Questions.RelationModel
             {
                 ThemeId = themeId,
@@ -184,7 +173,7 @@ public sealed class PackagesService : IPackagesService
             },
             cancellationToken);
 
-        _metrics.AddQuestions();
+        metrics.AddQuestions();
     }
 
     private async Task<int> InsertEntityAsync(string entityName, CancellationToken cancellationToken)
@@ -193,7 +182,7 @@ public sealed class PackagesService : IPackagesService
 
         try
         {
-            await _connection.Entities.InsertOrUpdateAsync(
+            await connection.Entities.InsertOrUpdateAsync(
                 () => new Database.Models.Questions.EntityModel
                 {
                     Name = entityName
@@ -211,7 +200,7 @@ public sealed class PackagesService : IPackagesService
             throw new LimitExceedException(exc);
         }
 
-        return (await _connection.Entities.FirstAsync(e => e.Name == entityName, token: cancellationToken)).Id;
+        return (await connection.Entities.FirstAsync(e => e.Name == entityName, token: cancellationToken)).Id;
     }
 
     private async Task<int> InsertQuestionTextAsync(string questionText, CancellationToken cancellationToken)
@@ -220,7 +209,7 @@ public sealed class PackagesService : IPackagesService
 
         try
         {
-            await _connection.Questions.InsertOrUpdateAsync(
+            await connection.Questions.InsertOrUpdateAsync(
                 () => new Database.Models.Questions.QuestionModel
                 {
                     Text = questionText
@@ -238,7 +227,7 @@ public sealed class PackagesService : IPackagesService
             throw new LimitExceedException(exc);
         }
 
-        return (await _connection.Questions.FirstAsync(q => q.Text == questionText, token: cancellationToken)).Id;
+        return (await connection.Questions.FirstAsync(q => q.Text == questionText, token: cancellationToken)).Id;
     }
 
     private async Task<int> InsertThemeNameAsync(string themeName, CancellationToken cancellationToken)
@@ -247,7 +236,7 @@ public sealed class PackagesService : IPackagesService
 
         try
         {
-            await _connection.Themes.InsertOrUpdateAsync(
+            await connection.Themes.InsertOrUpdateAsync(
                 () => new Database.Models.Questions.ThemeModel
                 {
                     Name = themeName
@@ -265,9 +254,9 @@ public sealed class PackagesService : IPackagesService
             throw new LimitExceedException(exc);
         }
 
-        return (await _connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
+        return (await connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
 
     private void LogLimit(string text, PostgresException exc) =>
-        _logger.LogInformation(exc, "Limit exceeded. Text: {text}, text length: {textLength}", text, text.Length);
+        logger.LogInformation(exc, "Limit exceeded. Text: {text}, text length: {textLength}", text, text.Length);
 }

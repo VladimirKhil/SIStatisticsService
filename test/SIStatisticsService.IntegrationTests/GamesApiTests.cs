@@ -10,7 +10,7 @@ internal sealed class GamesApiTests : TestsBase
     {
         var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() => SIStatisticsClient.SendGameReportAsync(new GameReport
         {
-            Info = new GameResultInfo(new PackageInfo("TestPackage", null, new[] { "TestAuthor" }))
+            Info = new GameResultInfo(new PackageInfo("TestPackage", "", ["TestAuthor"]))
             {
                 FinishTime = new DateTimeOffset(2023, 3, 18, 12, 0, 0, TimeSpan.Zero),
                 Duration = TimeSpan.FromMinutes(40),
@@ -29,7 +29,7 @@ internal sealed class GamesApiTests : TestsBase
             }
         }));
 
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime));
+        Assert.That(exception!.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime));
     }
 
     [Test]
@@ -150,14 +150,14 @@ internal sealed class GamesApiTests : TestsBase
             });
 
         Assert.That(gamesInfo, Is.Not.Null);
-        Assert.That(gamesInfo.Results, Has.Length.GreaterThanOrEqualTo(1), "No results found");
+        Assert.That(gamesInfo!.Results, Has.Length.GreaterThanOrEqualTo(1), "No results found");
 
         var gameResult = gamesInfo.Results.FirstOrDefault(r => r.Name == uniqueName);
         Assert.That(gameResult, Is.Not.Null);
 
         Assert.Multiple(() =>
         {
-            Assert.That(gameResult.FinishTime, Is.EqualTo(gameResultInfo.FinishTime).Within(TimeSpan.FromMilliseconds(100)));
+            Assert.That(gameResult!.FinishTime, Is.EqualTo(gameResultInfo.FinishTime).Within(TimeSpan.FromMilliseconds(100)));
             Assert.That(gameResult.Duration, Is.EqualTo(gameResultInfo.Duration));
             Assert.That(gameResult.Name, Is.EqualTo(gameResultInfo.Name));
             Assert.That(gameResult.Package.Name, Is.EqualTo(gameResultInfo.Package.Name));
@@ -183,7 +183,7 @@ internal sealed class GamesApiTests : TestsBase
 
         Assert.Multiple(() =>
         {
-            Assert.That(statistic.GameCount, Is.GreaterThan(2));
+            Assert.That(statistic!.GameCount, Is.GreaterThan(2));
             Assert.That(statistic.TotalDuration, Is.GreaterThanOrEqualTo(TimeSpan.FromMinutes(40)));
         });
 
@@ -199,7 +199,7 @@ internal sealed class GamesApiTests : TestsBase
 
         Assert.Multiple(() =>
         {
-            Assert.That(packages.Packages, Has.Length.GreaterThan(1));
+            Assert.That(packages!.Packages, Has.Length.GreaterThan(1));
 
             var testPackage = packages.Packages.FirstOrDefault(p => p.Package?.Name == "TestPackage");
             var testPackage2 = packages.Packages.FirstOrDefault(p => p.Package?.Name == "TestPackage 2");
@@ -294,32 +294,31 @@ internal sealed class GamesApiTests : TestsBase
         var questionInfo = await SIStatisticsClient.GetQuestionInfoAsync("Test theme", "Test question");
 
         Assert.That(questionInfo, Is.Not.Null);
-
-        Assert.That(questionInfo.Entities.Count, Is.GreaterThanOrEqualTo(4));
+        Assert.That(questionInfo!.Entities.Count, Is.GreaterThanOrEqualTo(4));
 
         var accepted = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test accept");
         Assert.That(accepted, Is.Not.Null);
 
         Assert.That(accepted, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(accepted.RelationType, Is.EqualTo(RelationType.Accepted));
+        Assert.That(accepted!.RelationType, Is.EqualTo(RelationType.Accepted));
 
         var rejected = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test reject");
         Assert.That(rejected, Is.Not.Null);
 
         Assert.That(rejected, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(rejected.RelationType, Is.EqualTo(RelationType.Rejected));
+        Assert.That(rejected!.RelationType, Is.EqualTo(RelationType.Rejected));
 
         var appellated = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test apellate");
         Assert.That(appellated, Is.Not.Null);
 
         Assert.That(appellated, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(appellated.RelationType, Is.EqualTo(RelationType.Apellated));
+        Assert.That(appellated!.RelationType, Is.EqualTo(RelationType.Apellated));
 
         var complained = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Test complain");
         Assert.That(complained, Is.Not.Null);
 
         Assert.That(complained, Has.Count.GreaterThanOrEqualTo(1));
-        Assert.That(complained.RelationType, Is.EqualTo(RelationType.Complained));
+        Assert.That(complained!.RelationType, Is.EqualTo(RelationType.Complained));
     }
 
     [Test]
@@ -336,7 +335,7 @@ internal sealed class GamesApiTests : TestsBase
         });
 
         Assert.That(statistics, Is.Not.Null);
-        Assert.That(statistics.Results, Has.Length.EqualTo(1));
+        Assert.That(statistics!.Results, Has.Length.EqualTo(1));
     }
 
     [TestCase("ru")]
@@ -355,7 +354,7 @@ internal sealed class GamesApiTests : TestsBase
         });
 
         Assert.That(statistics, Is.Not.Null);
-        Assert.That(statistics.Results, Has.Length.EqualTo(1));
+        Assert.That(statistics!.Results, Has.Length.EqualTo(1));
         Assert.That(statistics.Results[0].LanguageCode, Is.EqualTo(languageCode));
     }
 
@@ -363,7 +362,7 @@ internal sealed class GamesApiTests : TestsBase
     public void SendGameReport_EmptyInfo_Fail()
     {
         var exception = Assert.ThrowsAsync<SIStatisticsClientException>(() => SIStatisticsClient.SendGameReportAsync(new GameReport()));
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound));
+        Assert.That(exception!.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound));
     }
 
     [Test]
@@ -375,8 +374,11 @@ internal sealed class GamesApiTests : TestsBase
                 Info = new GameResultInfo(new PackageInfo("", "", []))
             }));
 
-        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception!.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+        });
     }
 
     [Test]
@@ -391,8 +393,11 @@ internal sealed class GamesApiTests : TestsBase
                 }
             }));
 
-        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception!.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform));
+        });
     }
 
     [Test]
@@ -407,8 +412,11 @@ internal sealed class GamesApiTests : TestsBase
                 }
             }));
 
-        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime));
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception!.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime));
+        });
     }
 
     [Test]
@@ -424,8 +432,11 @@ internal sealed class GamesApiTests : TestsBase
                 }
             }));
 
-        // TODO: provide richer error message
-        Assert.That(exception.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
-        Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.Unknown));
+        Assert.Multiple(() =>
+        {
+            // TODO: provide richer error message
+            Assert.That(exception!.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
+            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.Unknown));
+        });
     }
 }

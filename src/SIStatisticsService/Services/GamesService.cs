@@ -11,32 +11,24 @@ using SIStatisticsService.Metrics;
 namespace SIStatisticsService.Services;
 
 /// <inheritdoc cref="IGamesService" />
-public sealed class GamesService : IGamesService
+public sealed class GamesService(
+    SIStatisticsDbConnection connection,
+    IOptions<SIStatisticsServiceOptions> options,
+    OtelMetrics metrics) : IGamesService
 {
-    private readonly SIStatisticsDbConnection _connection;
-    private readonly SIStatisticsServiceOptions _options;
-    private readonly OtelMetrics _metrics;
-
-    public GamesService(
-        SIStatisticsDbConnection connection,
-        IOptions<SIStatisticsServiceOptions> options,
-        OtelMetrics metrics)
-    {
-        _connection = connection;
-        _options = options.Value;
-        _metrics = metrics;
-    }
-
+    private readonly SIStatisticsServiceOptions _options = options.Value;
+    
     public async Task<GameResultInfo[]> GetGamesByFilterAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
     {
         var query =
-            from g in _connection.Games
-            from p in _connection.Packages.Where(p => p.Id == g.PackageId)
-            from l in _connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            from g in connection.Games
+            from p in connection.Packages.Where(p => p.Id == g.PackageId)
+            from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
             where ((int)g.Platform & (int)statisticFilter.Platform) > 0
                 && g.FinishTime >= statisticFilter.From
                 && g.FinishTime <= statisticFilter.To
                 && (statisticFilter.LanguageCode == null || l != null && l.Code == statisticFilter.LanguageCode)
+                && !p.Hidden
             select new GameResultInfo(new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts), l != null ? l.Code : null)
             {
                 Name = g.Name,
@@ -55,10 +47,10 @@ public sealed class GamesService : IGamesService
     public async Task<GameResultInfo?> TryGetGameAsync(int gameId, CancellationToken cancellationToken)
     {
         var query =
-            from g in _connection.Games
-            from p in _connection.Packages.Where(p => p.Id == g.PackageId)
-            from l in _connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
-            where g.Id == gameId
+            from g in connection.Games
+            from p in connection.Packages.Where(p => p.Id == g.PackageId)
+            from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            where g.Id == gameId && !p.Hidden
             select new GameResultInfo(new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts), l != null ? l.Code : null)
             {
                 Name = g.Name,
@@ -75,8 +67,8 @@ public sealed class GamesService : IGamesService
     public async Task<GamesStatistic> GetGamesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
     {
         var query =
-            from g in _connection.Games
-            from l in _connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            from g in connection.Games
+            from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
             where ((int)g.Platform & (int)statisticFilter.Platform) > 0
                 && g.FinishTime >= statisticFilter.From
                 && g.FinishTime <= statisticFilter.To
@@ -98,14 +90,15 @@ public sealed class GamesService : IGamesService
     public async Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
     {
         var query =
-            from p in _connection.Packages
-            join g in _connection.Games on p.Id equals g.PackageId into packageGames
+            from p in connection.Packages
+            join g in connection.Games on p.Id equals g.PackageId into packageGames
             from pg in packageGames.DefaultIfEmpty()
-            from l in _connection.Languages.Where(l => l.Id == pg.LanguageId).DefaultIfEmpty()
+            from l in connection.Languages.Where(l => l.Id == pg.LanguageId).DefaultIfEmpty()
             where ((int)pg.Platform & (int)statisticFilter.Platform) > 0
                 && pg.FinishTime >= statisticFilter.From
                 && pg.FinishTime <= statisticFilter.To
                 && (statisticFilter.LanguageCode == null || l != null && l.Code == statisticFilter.LanguageCode)
+                && !p.Hidden
             group p by new { p.Id, p.Name, p.Hash, p.Authors, p.AuthorsContacts } into g
             orderby g.Count() descending
             select new PackageStatistic
@@ -129,13 +122,13 @@ public sealed class GamesService : IGamesService
             throw new ArgumentException("Invalid FinishTime");
         }
 
-        using var tx = await _connection.BeginTransactionAsync(cancellationToken);
+        using var tx = await connection.BeginTransactionAsync(cancellationToken);
         var packageId = await InsertOrUpdatePackageAsync(gameResult.Package, cancellationToken);
         var languageId = await GetLanguageIdAsync(gameResult.LanguageCode, cancellationToken);
         var gameId = await InsertGameAsync(gameResult, packageId, languageId, cancellationToken);
         await tx.CommitAsync(cancellationToken);
 
-        _metrics.AddGameReport();
+        metrics.AddGameReport();
 
         return gameId;
     }
@@ -147,11 +140,11 @@ public sealed class GamesService : IGamesService
             return null;
         }
 
-        return (await _connection.Languages.FirstOrDefaultAsync(l => l.Code == languageCode, cancellationToken))?.Id;
+        return (await connection.Languages.FirstOrDefaultAsync(l => l.Code == languageCode, cancellationToken))?.Id;
     }
 
     private Task<int> InsertGameAsync(GameResultInfo gameResult, int packageId, int? languageId, CancellationToken cancellationToken) =>
-        _connection.Games.InsertWithInt32IdentityAsync(
+        connection.Games.InsertWithInt32IdentityAsync(
             () => new GameModel
             {
                 Name = gameResult.Name,
@@ -168,7 +161,7 @@ public sealed class GamesService : IGamesService
 
     private async Task<int> InsertOrUpdatePackageAsync(PackageInfo packageInfo, CancellationToken cancellationToken)
     {
-        await _connection.Packages.InsertOrUpdateAsync(
+        await connection.Packages.InsertOrUpdateAsync(
             () => new PackageModel
             {
                 Name = packageInfo.Name,
@@ -191,7 +184,7 @@ public sealed class GamesService : IGamesService
             },
             cancellationToken);
 
-        return (await _connection.Packages.FirstAsync(
+        return (await connection.Packages.FirstAsync(
             p => p.Name == packageInfo.Name && p.Hash == packageInfo.Hash && p.Authors == packageInfo.Authors,
             token: cancellationToken)).Id;
     }
