@@ -39,6 +39,7 @@ public interface IGamesService
     /// Get cumulative latest played packages statistic.
     /// </summary>
     /// <param name="statisticFilter">Statistic filter.</param>
+    /// <param name="source">Packages source.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken = default);
+    Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, Uri? source = null, CancellationToken cancellationToken = default);
 }

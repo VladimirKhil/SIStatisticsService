@@ -8,9 +8,8 @@ namespace SIStatisticsService.Database;
 /// <summary>
 /// Defines a database context.
 /// </summary>
-public sealed class SIStatisticsDbConnection : DataConnection
+public sealed class SIStatisticsDbConnection(DataOptions dataOptions) : DataConnection(dataOptions)
 {
-    public SIStatisticsDbConnection(DataOptions dataOptions) : base(dataOptions) { }
 
     /// <summary>
     /// Common entities.
@@ -26,6 +25,11 @@ public sealed class SIStatisticsDbConnection : DataConnection
     /// Game packages.
     /// </summary>
     public ITable<PackageModel> Packages => this.GetTable<PackageModel>();
+
+    /// <summary>
+    /// Package sources.
+    /// </summary>
+    public ITable<PackageSourceModel> PackageSources => this.GetTable<PackageSourceModel>();
 
     /// <summary>
     /// Questions.

@@ -38,9 +38,9 @@ public interface ISIStatisticsServiceClient
     /// <summary>
     /// Gets latest top played packages.
     /// </summary>
-    /// <param name="filter">Statistic filter.</param>
+    /// <param name="request">Request parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<PackagesStatistic?> GetLatestTopPackagesAsync(StatisticFilter filter, CancellationToken cancellationToken = default);
+    Task<PackagesStatistic?> GetLatestTopPackagesAsync(TopPackagesRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets question info.

@@ -31,7 +31,7 @@ public sealed class PackageModel
     /// Package authors.
     /// </summary>
     [Column(DataType = DataType.BinaryJson), NotNull]
-    public string[] Authors { get; set; } = Array.Empty<string>();
+    public string[] Authors { get; set; } = [];
 
     /// <summary>
     /// Package author contacts.

@@ -188,12 +188,12 @@ internal sealed class GamesApiTests : TestsBase
         });
 
         var packages = await SIStatisticsClient.GetLatestTopPackagesAsync(
-            new StatisticFilter
+            new TopPackagesRequest(new StatisticFilter
             {
                 From = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(1)),
                 To = DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(1)),
                 Platform = GamePlatforms.Local,
-            });
+            }));
 
         Assert.That(packages, Is.Not.Null);
 

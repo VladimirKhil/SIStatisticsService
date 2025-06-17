@@ -39,8 +39,8 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
     public Task<GamesStatistic?> GetLatestGamesStatisticAsync(StatisticFilter filter, CancellationToken cancellationToken = default) =>
         GetJsonAsync<GamesStatistic>("games/stats", BuildFilter(filter), cancellationToken);
 
-    public Task<PackagesStatistic?> GetLatestTopPackagesAsync(StatisticFilter filter, CancellationToken cancellationToken = default) =>
-        GetJsonAsync<PackagesStatistic>("games/packages", BuildFilter(filter), cancellationToken);
+    public Task<PackagesStatistic?> GetLatestTopPackagesAsync(TopPackagesRequest request, CancellationToken cancellationToken = default) =>
+        GetJsonAsync<PackagesStatistic>("games/packages", BuildRequest(request), cancellationToken);
 
     public Task<QuestionInfoResponse?> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken = default) =>
         GetJsonAsync<QuestionInfoResponse>(
@@ -103,6 +103,18 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
         }
 
         return result;
+    }
+
+    private static Dictionary<string, object> BuildRequest(TopPackagesRequest request)
+    {
+        var filter = BuildFilter(request.StatisticFilter);
+        
+        if (request.Source != null)
+        {
+            filter["source"] = request.Source.ToString();
+        }
+
+        return filter;
     }
 
     private static async Task<SIStatisticsClientException> GetErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)

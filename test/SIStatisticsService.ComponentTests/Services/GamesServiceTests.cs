@@ -183,8 +183,8 @@ internal sealed class GamesServiceTests : TestsBase
         var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -193,8 +193,8 @@ internal sealed class GamesServiceTests : TestsBase
         var gameResult2 = new GameResultInfo(new PackageInfo($"Test package 2 {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, "Contact value"))
         {
             Name = $"Test game 2 {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 

@@ -42,9 +42,10 @@ public sealed class GamesController(
     [HttpGet("packages")]
     public async Task<ActionResult<PackagesStatistic>> GetLatestTopPackagesAsync(
         [FromQuery] StatisticFilter statisticFilter,
+        [FromQuery] Uri? source = null,
         CancellationToken cancellationToken = default)
     {
-        var packagesStatistic = await gamesService.GetPackagesStatisticAsync(statisticFilter, cancellationToken);
+        var packagesStatistic = await gamesService.GetPackagesStatisticAsync(statisticFilter, source, cancellationToken);
 
         return Ok(packagesStatistic);
     }

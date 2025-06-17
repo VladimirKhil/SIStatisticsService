@@ -17,6 +17,7 @@ public static class DbConstants
     public const string GamesSchema = QuestionsSchema; // Could be different in the future
 
     public const string Packages = nameof(Packages);
+    public const string PackageSources = nameof(PackageSources);
     public const string Games = nameof(Games);
     public const string Languages = nameof(Languages);
 }

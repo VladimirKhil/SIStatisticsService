@@ -17,19 +17,22 @@ public sealed class GamesService(
     OtelMetrics metrics) : IGamesService
 {
     private readonly SIStatisticsServiceOptions _options = options.Value;
-    
+
     public async Task<GameResultInfo[]> GetGamesByFilterAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
     {
         var query =
             from g in connection.Games
             from p in connection.Packages.Where(p => p.Id == g.PackageId)
             from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            from ps in connection.PackageSources.Where(ps => ps.PackageId == p.Id).DefaultIfEmpty()
             where ((int)g.Platform & (int)statisticFilter.Platform) > 0
                 && g.FinishTime >= statisticFilter.From
                 && g.FinishTime <= statisticFilter.To
                 && (statisticFilter.LanguageCode == null || l != null && l.Code == statisticFilter.LanguageCode)
                 && !p.Hidden
-            select new GameResultInfo(new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts), l != null ? l.Code : null)
+            select new GameResultInfo(
+                new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts, ps != null ? new Uri(ps.Source) : null),
+                l != null ? l.Code : null)
             {
                 Name = g.Name,
                 Duration = g.Duration,
@@ -50,8 +53,11 @@ public sealed class GamesService(
             from g in connection.Games
             from p in connection.Packages.Where(p => p.Id == g.PackageId)
             from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            from ps in connection.PackageSources.Where(ps => ps.PackageId == p.Id).DefaultIfEmpty()
             where g.Id == gameId && !p.Hidden
-            select new GameResultInfo(new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts), l != null ? l.Code : null)
+            select new GameResultInfo(
+                new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts, ps != null ? new Uri(ps.Source) : null),
+                l != null ? l.Code : null)
             {
                 Name = g.Name,
                 Duration = g.Duration,
@@ -87,31 +93,69 @@ public sealed class GamesService(
         };
     }
 
-    public async Task<PackagesStatistic> GetPackagesStatisticAsync(StatisticFilter statisticFilter, CancellationToken cancellationToken)
+    public async Task<PackagesStatistic> GetPackagesStatisticAsync(
+        StatisticFilter statisticFilter,
+        Uri? source = null,
+        CancellationToken cancellationToken = default)
     {
-        var query =
+        var sourceTypeId = source != null ? source.GetStableHostHash() : (int?)null;
+
+        // First, get the package statistics with game counts
+        var packageStatsQuery =
             from p in connection.Packages
-            join g in connection.Games on p.Id equals g.PackageId into packageGames
-            from pg in packageGames.DefaultIfEmpty()
-            from l in connection.Languages.Where(l => l.Id == pg.LanguageId).DefaultIfEmpty()
-            where ((int)pg.Platform & (int)statisticFilter.Platform) > 0
-                && pg.FinishTime >= statisticFilter.From
-                && pg.FinishTime <= statisticFilter.To
+            join g in connection.Games on p.Id equals g.PackageId
+            from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
+            where ((int)g.Platform & (int)statisticFilter.Platform) > 0
+                && g.FinishTime >= statisticFilter.From
+                && g.FinishTime <= statisticFilter.To
                 && (statisticFilter.LanguageCode == null || l != null && l.Code == statisticFilter.LanguageCode)
                 && !p.Hidden
-            group p by new { p.Id, p.Name, p.Hash, p.Authors, p.AuthorsContacts } into g
-            orderby g.Count() descending
-            select new PackageStatistic
+            group g by new { p.Id, p.Name, p.Hash, p.Authors, p.AuthorsContacts } into packageGroup
+            orderby packageGroup.Count() descending
+            select new
             {
-                Package = new PackageInfo(g.Key.Name, g.Key.Hash, g.Key.Authors, g.Key.AuthorsContacts),
-                GameCount = g.Count()
+                PackageId = packageGroup.Key.Id,
+                PackageName = packageGroup.Key.Name,
+                PackageHash = packageGroup.Key.Hash,
+                PackageAuthors = packageGroup.Key.Authors,
+                PackageAuthorsContacts = packageGroup.Key.AuthorsContacts,
+                GameCount = packageGroup.Count()
             };
 
         var maxCount = GetMaxItemCount(statisticFilter, _options.TopPackageCount);
+        var packageStats = await packageStatsQuery.Take(maxCount).ToArrayAsync(cancellationToken);
+
+        // Then, get the package sources for the selected packages
+        var packageIds = packageStats.Select(ps => ps.PackageId).ToArray();
+        var packageSources = await (
+            from ps in connection.PackageSources
+            where packageIds.Contains(ps.PackageId)
+                && (sourceTypeId == null || ps.SourceTypeId == sourceTypeId)
+            select new { ps.PackageId, ps.Source }
+        ).ToArrayAsync(cancellationToken);
+
+        // Create a lookup for package sources
+        var sourcesByPackageId = packageSources.ToLookup(ps => ps.PackageId);
+
+        // Build the final result
+        var packages = packageStats.Select(ps =>
+        {
+            var packageSource = sourcesByPackageId[ps.PackageId].FirstOrDefault();
+            return new PackageStatistic
+            {
+                Package = new PackageInfo(
+                    ps.PackageName,
+                    ps.PackageHash,
+                    ps.PackageAuthors,
+                    ps.PackageAuthorsContacts,
+                    packageSource != null ? new Uri(packageSource.Source) : null),
+                GameCount = ps.GameCount
+            };
+        }).ToArray();
 
         return new PackagesStatistic
         {
-            Packages = await query.Take(maxCount).ToArrayAsync(cancellationToken)
+            Packages = packages
         };
     }
 
@@ -184,9 +228,36 @@ public sealed class GamesService(
             },
             cancellationToken);
 
-        return (await connection.Packages.FirstAsync(
+        var packageId = (await connection.Packages.FirstAsync(
             p => p.Name == packageInfo.Name && p.Hash == packageInfo.Hash && p.Authors == packageInfo.Authors,
             token: cancellationToken)).Id;
+
+        if (packageInfo.Source != null)
+        {
+            var sourceTypeId = packageInfo.Source.GetStableHostHash();
+
+            await connection.PackageSources.InsertOrUpdateAsync(
+                () => new PackageSourceModel
+                {
+                    PackageId = packageId,
+                    SourceTypeId = sourceTypeId,
+                    Source = packageInfo.Source.ToString()
+                },
+                p => new PackageSourceModel
+                {
+                    PackageId = packageId,
+                    SourceTypeId = sourceTypeId,
+                    Source = p.Source,
+                },
+                () => new PackageSourceModel
+                {
+                    PackageId = packageId,
+                    SourceTypeId = sourceTypeId,
+                },
+                cancellationToken);
+        }
+
+        return packageId;
     }
 
     private static int GetMaxItemCount(StatisticFilter statisticFilter, int defaultValue) =>
