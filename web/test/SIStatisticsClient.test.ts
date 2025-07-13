@@ -89,10 +89,12 @@ test('Get packages statistics', async () => {
 	const now = new Date();
 
 	const statistics = await siStatisticsClient.getLatestTopPackagesAsync({
-		platform: GamePlatforms.GameServer,
-		from: new Date(now.getTime() - ONE_HOUR),
-		to: now,
-		count: 5,
+		statisticFilter: {
+			platform: GamePlatforms.GameServer,
+			from: new Date(now.getTime() - ONE_HOUR),
+			to: now,
+			count: 5,
+		},
 	});
 
 	expect(statistics).not.toBeNull();

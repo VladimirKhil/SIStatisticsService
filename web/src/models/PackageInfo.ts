@@ -11,4 +11,7 @@ export default interface PackageInfo {
 
 	/** Package author contacts. */
 	authorsContacts: string;
+
+	/** Package source URI. */
+	source?: string;
 }
