@@ -114,6 +114,11 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
             filter["source"] = request.Source.ToString();
         }
 
+        if (request.FallbackSource != null)
+        {
+            filter["fallbackSource"] = request.FallbackSource.ToString();
+        }
+
         return filter;
     }
 

@@ -94,11 +94,12 @@ public sealed class GamesService(
     }
 
     public async Task<PackagesStatistic> GetPackagesStatisticAsync(
-        StatisticFilter statisticFilter,
-        Uri? source = null,
+        TopPackagesRequest packagesRequest,
         CancellationToken cancellationToken = default)
     {
-        var sourceTypeId = source != null ? source.GetStableHostHash() : (int?)null;
+        var statisticFilter = packagesRequest.StatisticFilter;
+        var sourceTypeId = packagesRequest.Source != null ? packagesRequest.Source.GetStableHostHash() : (int?)null;
+        var fallbackSourceTypeId = packagesRequest.FallbackSource != null ? packagesRequest.FallbackSource.GetStableHostHash() : (int?)null;
 
         // First, get the package statistics with game counts
         var packageStatsQuery =
@@ -130,8 +131,8 @@ public sealed class GamesService(
         var packageSources = await (
             from ps in connection.PackageSources
             where packageIds.Contains(ps.PackageId)
-                && (sourceTypeId == null || ps.SourceTypeId == sourceTypeId)
-            select new { ps.PackageId, ps.Source }
+                && (sourceTypeId == null || fallbackSourceTypeId == null || ps.SourceTypeId == sourceTypeId || ps.SourceTypeId == fallbackSourceTypeId)
+            select new { ps.PackageId, ps.SourceTypeId, ps.Source }
         ).ToArrayAsync(cancellationToken);
 
         // Create a lookup for package sources
@@ -140,7 +141,39 @@ public sealed class GamesService(
         // Build the final result
         var packages = packageStats.Select(ps =>
         {
-            var packageSource = sourcesByPackageId[ps.PackageId].FirstOrDefault();
+            var packageSources = sourcesByPackageId[ps.PackageId];
+            
+            // Find the appropriate source to use
+            Uri? finalSource = null;
+            
+            if (sourceTypeId != null)
+            {
+                // First try to find the primary source
+                var primarySource = packageSources.FirstOrDefault(s => s.SourceTypeId == sourceTypeId);
+                if (primarySource != null)
+                {
+                    finalSource = new Uri(primarySource.Source);
+                }
+                else if (fallbackSourceTypeId != null)
+                {
+                    // If primary source not found, try fallback source
+                    var fallbackSourceMatch = packageSources.FirstOrDefault(s => s.SourceTypeId == fallbackSourceTypeId);
+                    if (fallbackSourceMatch != null)
+                    {
+                        finalSource = new Uri(fallbackSourceMatch.Source);
+                    }
+                }
+            }
+            else
+            {
+                // If no source filter is specified, return the first available source
+                var firstSource = packageSources.FirstOrDefault();
+                if (firstSource != null)
+                {
+                    finalSource = new Uri(firstSource.Source);
+                }
+            }
+
             return new PackageStatistic
             {
                 Package = new PackageInfo(
@@ -148,7 +181,7 @@ public sealed class GamesService(
                     ps.PackageHash,
                     ps.PackageAuthors,
                     ps.PackageAuthorsContacts,
-                    packageSource != null ? new Uri(packageSource.Source) : null),
+                    finalSource),
                 GameCount = ps.GameCount
             };
         }).ToArray();

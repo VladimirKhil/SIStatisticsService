@@ -37,9 +37,10 @@ internal static class GamesEndpointDefinitions
             IGamesService gamesService,
             [AsParameters] StatisticFilter statisticFilter,
             Uri? source = null,
+            Uri? fallbackSource = null,
             CancellationToken cancellationToken = default) =>
         {
-            var packagesStatistic = await gamesService.GetPackagesStatisticAsync(statisticFilter, source, cancellationToken);
+            var packagesStatistic = await gamesService.GetPackagesStatisticAsync(new TopPackagesRequest(statisticFilter, source, fallbackSource), cancellationToken);
             return Results.Ok(packagesStatistic);
         });
 

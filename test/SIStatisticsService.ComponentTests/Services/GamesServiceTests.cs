@@ -201,13 +201,13 @@ internal sealed class GamesServiceTests : TestsBase
         await GamesService.AddGameResultAsync(gameResult2);
 
         var packages = await GamesService.GetPackagesStatisticAsync(
-            new StatisticFilter
+            new TopPackagesRequest(new StatisticFilter
             {
                 From = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1)),
                 To = DateTimeOffset.Now,
                 Platform = GamePlatforms.Local,
                 Count = count
-            });
+            }));
 
         Assert.That(packages.Packages, count == 1 ? Has.Length.EqualTo(count) : Has.Length.GreaterThan(1));
     }
