@@ -9,6 +9,7 @@ using Serilog;
 using SIStatisticsService.Configuration;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
+using SIStatisticsService.EndpointDefinitions;
 using SIStatisticsService.Metrics;
 using SIStatisticsService.Middlewares;
 using SIStatisticsService.Services;
@@ -43,8 +44,6 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 {
     services.Configure<SIStatisticsServiceOptions>(configuration.GetSection(SIStatisticsServiceOptions.ConfigurationSectionName));
 
-    services.AddControllers();
-
     services.AddSIStatisticsDatabase(configuration);
     ConfigureMigrationRunner(services, configuration);
 
@@ -76,7 +75,9 @@ static void Configure(WebApplication app)
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
     app.UseRouting();
-    app.MapControllers();
+
+    app.DefineGamesEndpoint();
+    app.DefineAdminEndpoint();
 
     CreateDatabase(app);
     ApplyMigrations(app);
