@@ -34,4 +34,9 @@ public enum WellKnownSIStatisticServiceErrorCode
     /// Invalid Duration value.
     /// </summary>
     InvalidDuration,
+
+    /// <summary>
+    /// Package hash is missing.
+    /// </summary>
+    MissingPackageHash,
 }

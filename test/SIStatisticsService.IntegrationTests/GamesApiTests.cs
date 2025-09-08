@@ -212,14 +212,14 @@ internal sealed class GamesApiTests : TestsBase
 
     private Task AddPackageGamesAsync(string packageName, string? languageCode = null)
     {
-        var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", new[] { "TestAuthor 2" }), languageCode)
+        var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", ["TestAuthor 2"]), languageCode)
         {
             FinishTime = DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMinutes(10),
             Name = "_TEST_" + Guid.NewGuid().ToString(),
             Platform = GamePlatforms.Local,
-            Results = new Dictionary<string, int>(),
-            Reviews = new Dictionary<string, string>()
+            Results = [],
+            Reviews = []
         };
 
         var gameReport2 = new GameReport
@@ -354,8 +354,12 @@ internal sealed class GamesApiTests : TestsBase
         });
 
         Assert.That(statistics, Is.Not.Null);
-        Assert.That(statistics!.Results, Has.Length.EqualTo(1));
-        Assert.That(statistics.Results[0].LanguageCode, Is.EqualTo(languageCode));
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(statistics!.Results, Has.Length.EqualTo(1));
+            Assert.That(statistics.Results[0].LanguageCode, Is.EqualTo(languageCode));
+        });
     }
 
     [Test]
@@ -434,9 +438,8 @@ internal sealed class GamesApiTests : TestsBase
 
         Assert.Multiple(() =>
         {
-            // TODO: provide richer error message
             Assert.That(exception!.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.BadRequest));
-            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.Unknown));
+            Assert.That(exception.ErrorCode, Is.EqualTo(WellKnownSIStatisticServiceErrorCode.MissingPackageHash));
         });
     }
 }

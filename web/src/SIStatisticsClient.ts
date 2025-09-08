@@ -41,7 +41,8 @@ export default class SIStatisticsClient {
 
 	private buildRequest(request: TopPackagesRequest) {
 		const packageSourceFilter = request.packageSource ? `&source=${encodeURIComponent(request.packageSource)}` : '';
-		return `?platform=${request.statisticFilter.platform}&from=${request.statisticFilter.from.toISOString()}&to=${request.statisticFilter.to.toISOString()}&count=${request.statisticFilter.count}${packageSourceFilter}`;
+		const fallbackSourceFilter = request.fallbackSource ? `&fallbackSource=${encodeURIComponent(request.fallbackSource)}` : '';
+		return `?platform=${request.statisticFilter.platform}&from=${request.statisticFilter.from.toISOString()}&to=${request.statisticFilter.to.toISOString()}&count=${request.statisticFilter.count}${packageSourceFilter}${fallbackSourceFilter}`;
 	}
 
 	/**

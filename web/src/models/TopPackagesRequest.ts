@@ -7,4 +7,7 @@ export default interface TopPackagesRequest {
 
 	/** Optional package source URI. */
 	packageSource?: string;
+
+	/** Optional package source fallback URI. */
+	fallbackSource?: string;
 }

@@ -17,11 +17,12 @@ public interface IPackagesService
     Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Imports package data.
+    /// Imports package data and collects appellated and rejected answers.
     /// </summary>
     /// <param name="package">Package data.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task ImportPackageAsync(Package package, CancellationToken cancellationToken = default);
+    /// <returns>Import result with collected appellated and rejected answers.</returns>
+    Task<PackageImportResult> ImportPackageAsync(Package package, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Imports question report.

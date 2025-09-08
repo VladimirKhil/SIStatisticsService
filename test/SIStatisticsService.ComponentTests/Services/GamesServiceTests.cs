@@ -10,11 +10,11 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, ""))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"], ""))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now,
             LanguageCode = languageCode
         };
@@ -37,11 +37,11 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -54,11 +54,11 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -68,11 +68,11 @@ internal sealed class GamesServiceTests : TestsBase
         Assert.That(game, Is.Not.Null);
         Assert.That(game.Package.AuthorsContacts, Is.Null);
 
-        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, "Contact value"))
+        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"], "Contact value"))
         {
             Name = $"Test game 2 {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -82,11 +82,11 @@ internal sealed class GamesServiceTests : TestsBase
         Assert.That(game, Is.Not.Null);
         Assert.That(game.Package.AuthorsContacts, Is.EqualTo("Contact value"));
 
-        var gameResult3 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult3 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -103,21 +103,21 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
         await GamesService.AddGameResultAsync(gameResult);
 
-        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, "Contact value"))
+        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"], "Contact value"))
         {
             Name = $"Test game 2 {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now
         };
 
@@ -140,22 +140,22 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now,
             LanguageCode = "en"
         };
 
         await GamesService.AddGameResultAsync(gameResult);
 
-        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, "Contact value"))
+        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"], "Contact value"))
         {
             Name = $"Test game 2 {randomId}",
-            Results = new(),
-            Reviews = new(),
+            Results = [],
+            Reviews = [],
             FinishTime = DateTimeOffset.Now,
             LanguageCode = "en"
         };
@@ -180,7 +180,7 @@ internal sealed class GamesServiceTests : TestsBase
     {
         var randomId = Guid.NewGuid();
 
-        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }))
+        var gameResult = new GameResultInfo(new PackageInfo($"Test package {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"]))
         {
             Name = $"Test game {randomId}",
             Results = [],
@@ -190,7 +190,7 @@ internal sealed class GamesServiceTests : TestsBase
 
         await GamesService.AddGameResultAsync(gameResult);
 
-        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package 2 {randomId}", "", new string[] { $"Test author 1 {randomId}", $"Test author 2 {randomId}" }, "Contact value"))
+        var gameResult2 = new GameResultInfo(new PackageInfo($"Test package 2 {randomId}", "", [$"Test author 1 {randomId}", $"Test author 2 {randomId}"], "Contact value"))
         {
             Name = $"Test game 2 {randomId}",
             Results = [],

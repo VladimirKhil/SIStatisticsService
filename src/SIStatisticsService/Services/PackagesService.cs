@@ -34,12 +34,17 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         };
     }
 
-    public async Task ImportPackageAsync(Package package, CancellationToken cancellationToken)
+    public async Task<PackageImportResult> ImportPackageAsync(Package package, CancellationToken cancellationToken)
     {
-        foreach (var round in package.Rounds)
+        var result = new PackageImportResult();
+
+        for (int roundIndex = 0; roundIndex < package.Rounds.Count; roundIndex++)
         {
-            foreach (var theme in round.Themes)
+            var round = package.Rounds[roundIndex];
+            
+            for (int themeIndex = 0; themeIndex < round.Themes.Count; themeIndex++)
             {
+                var theme = round.Themes[themeIndex];
                 int themeId;
 
                 try
@@ -52,8 +57,9 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
                     continue;
                 }
 
-                foreach (var question in theme.Questions)
+                for (int questionIndex = 0; questionIndex < theme.Questions.Count; questionIndex++)
                 {
+                    var question = theme.Questions[questionIndex];
                     var questionText = question.GetText();
                     int questionId;
 
@@ -76,11 +82,21 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
                     {
                         await InsertOrUpdateAnswer(themeId, questionId, answer, Database.Models.Questions.RelationType.Wrong, cancellationToken);
                     }
+
+                    // Collect appellated and rejected answers for this question
+                    var collectedAnswers = await GetAppellatedAndRejectedAnswersAsync(themeId, questionId, cancellationToken);
+                    
+                    if (collectedAnswers.Count != 0)
+                    {
+                        var questionKey = new QuestionKey(roundIndex, themeIndex, questionIndex);
+                        result.CollectedAnswers[questionKey] = collectedAnswers;
+                    }
                 }
             }
         }
 
         metrics.AddPackage();
+        return result;
     }
 
     public async Task ImportQuestionReportAsync(QuestionReport questionReport, CancellationToken cancellationToken)
@@ -255,6 +271,27 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         }
 
         return (await connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
+    }
+
+    private async Task<List<CollectedAnswer>> GetAppellatedAndRejectedAnswersAsync(
+        int themeId,
+        int questionId,
+        CancellationToken cancellationToken)
+    {
+        var query =
+            from r in connection.Relations
+            join e in connection.Entities on r.EntityId equals e.Id
+            where r.ThemeId == themeId && 
+                  r.QuestionId == questionId && 
+                  (r.Type == Database.Models.Questions.RelationType.Apellated || r.Type == Database.Models.Questions.RelationType.Rejected)
+            select new CollectedAnswer
+            {
+                AnswerText = e.Name,
+                RelationType = MapType(r.Type),
+                Count = r.Count
+            };
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     private void LogLimit(string text, PostgresException exc) =>

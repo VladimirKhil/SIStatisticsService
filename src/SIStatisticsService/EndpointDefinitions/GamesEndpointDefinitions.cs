@@ -55,6 +55,11 @@ internal static class GamesEndpointDefinitions
             var gameInfo = gameReport.Info
                 ?? throw new ServiceException(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound, System.Net.HttpStatusCode.BadRequest);
 
+            if (gameInfo.Package.Hash == null)
+            {
+                throw new ServiceException(WellKnownSIStatisticServiceErrorCode.MissingPackageHash, System.Net.HttpStatusCode.BadRequest);
+            }
+
             if (gameInfo.Platform != GamePlatforms.Local)
             {
                 throw new ServiceException(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform, System.Net.HttpStatusCode.BadRequest);

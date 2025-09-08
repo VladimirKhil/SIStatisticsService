@@ -45,9 +45,9 @@ internal static class AdminEndpointDefinitions
                 package.ReadXml(reader);
             }
 
-            await packagesService.ImportPackageAsync(package, cancellationToken);
+            var result = await packagesService.ImportPackageAsync(package, cancellationToken);
 
-            return Results.Accepted();
+            return Results.Ok(result);
         });
 
         // POST /api/v1/admin/reports
