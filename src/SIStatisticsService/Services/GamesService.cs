@@ -24,14 +24,13 @@ public sealed class GamesService(
             from g in connection.Games
             from p in connection.Packages.Where(p => p.Id == g.PackageId)
             from l in connection.Languages.Where(l => l.Id == g.LanguageId).DefaultIfEmpty()
-            from ps in connection.PackageSources.Where(ps => ps.PackageId == p.Id).DefaultIfEmpty()
             where ((int)g.Platform & (int)statisticFilter.Platform) > 0
                 && g.FinishTime >= statisticFilter.From
                 && g.FinishTime <= statisticFilter.To
                 && (statisticFilter.LanguageCode == null || l != null && l.Code == statisticFilter.LanguageCode)
                 && !p.Hidden
             select new GameResultInfo(
-                new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts, ps != null ? new Uri(ps.Source) : null),
+                new PackageInfo(p.Name, p.Hash, p.Authors, p.AuthorsContacts, null),
                 l != null ? l.Code : null)
             {
                 Name = g.Name,
