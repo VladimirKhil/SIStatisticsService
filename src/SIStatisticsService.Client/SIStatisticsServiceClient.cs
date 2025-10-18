@@ -62,7 +62,7 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
         }
     }
 
-    public async Task SendPackageContentAsync(Stream packageContentStream, CancellationToken cancellationToken = default)
+    public async Task<PackageImportResult?> SendPackageContentAsync(Stream packageContentStream, CancellationToken cancellationToken = default)
     {
         var formData = new MultipartFormDataContent();
         var packageContent = new StreamContent(packageContentStream, BufferSize);
@@ -74,6 +74,8 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
         {
             throw await GetErrorAsync(response, cancellationToken);
         }
+
+        return await response.Content.ReadFromJsonAsync<PackageImportResult>(SerializerOptions, cancellationToken);
     }
 
     private Task<T?> GetJsonAsync<T>(string uri, Dictionary<string, object> parameters, CancellationToken cancellationToken)

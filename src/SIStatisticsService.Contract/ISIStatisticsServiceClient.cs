@@ -12,7 +12,8 @@ public interface ISIStatisticsServiceClient
     /// </summary>
     /// <param name="packageContentStream">Package content stream.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task SendPackageContentAsync(Stream packageContentStream, CancellationToken cancellationToken = default);
+    /// <returns>Package import result with collected appellated and rejected answers.</returns>
+    Task<PackageImportResult?> SendPackageContentAsync(Stream packageContentStream, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Uploads game report to service.
