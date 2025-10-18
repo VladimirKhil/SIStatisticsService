@@ -70,6 +70,11 @@ internal static class AdminEndpointDefinitions
                 throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime, System.Net.HttpStatusCode.BadRequest);
             }
 
+            if (gameInfo.Platform != GamePlatforms.Local && gameInfo.Platform != GamePlatforms.GameServer)
+            {
+                throw new ServiceException(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform, System.Net.HttpStatusCode.BadRequest);
+            }
+
             await gamesService.AddGameResultAsync(gameInfo, cancellationToken);
 
             foreach (var questionReport in gameReport.QuestionReports)

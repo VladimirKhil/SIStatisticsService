@@ -7,7 +7,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using Serilog;
 using SIStatisticsService.Configuration;
-using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
 using SIStatisticsService.EndpointDefinitions;
@@ -15,7 +14,6 @@ using SIStatisticsService.Metrics;
 using SIStatisticsService.Middlewares;
 using SIStatisticsService.Services;
 using System.Data.Common;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 

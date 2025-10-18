@@ -8,25 +8,22 @@ namespace SIStatisticsService.Middlewares;
 /// <summary>
 /// Handles exceptions and creates corresponsing service responses.
 /// </summary>
-internal sealed class ErrorHandlingMiddleware
+internal sealed class ErrorHandlingMiddleware(RequestDelegate next)
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters =
         {
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
 
-    private readonly RequestDelegate _next;
-
-    public ErrorHandlingMiddleware(RequestDelegate next) => _next = next;
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (ServiceException exc)
         {
