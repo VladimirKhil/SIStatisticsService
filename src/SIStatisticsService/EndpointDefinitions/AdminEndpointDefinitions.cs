@@ -60,6 +60,11 @@ internal static class AdminEndpointDefinitions
             var gameInfo = gameReport.Info
                 ?? throw new ServiceException(WellKnownSIStatisticServiceErrorCode.GameInfoNotFound, System.Net.HttpStatusCode.BadRequest);
 
+            if (gameInfo.Package.Hash == null)
+            {
+                throw new ServiceException(WellKnownSIStatisticServiceErrorCode.MissingPackageHash, System.Net.HttpStatusCode.BadRequest);
+            }
+
             if (DateTimeOffset.UtcNow.Subtract(gameInfo.FinishTime).TotalHours > 1.0)
             {
                 throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidFinishTime, System.Net.HttpStatusCode.BadRequest);

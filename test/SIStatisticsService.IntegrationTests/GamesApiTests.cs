@@ -218,7 +218,10 @@ internal sealed class GamesApiTests : TestsBase
             Duration = TimeSpan.FromMinutes(10),
             Name = "_TEST_" + Guid.NewGuid().ToString(),
             Platform = GamePlatforms.Local,
-            Results = [],
+            Results = new Dictionary<string, int>
+            {
+                { "Player", 2000 }
+            },
             Reviews = []
         };
 
@@ -256,8 +259,8 @@ internal sealed class GamesApiTests : TestsBase
         var gameReport = new GameReport
         {
             Info = gameResultInfo,
-            QuestionReports = new QuestionReport[]
-            {
+            QuestionReports =
+            [
                 new()
                 {
                     ThemeName = "Test theme",
@@ -286,7 +289,7 @@ internal sealed class GamesApiTests : TestsBase
                     ReportText = "Test complain",
                     ReportType = QuestionReportType.Complained
                 },
-            }
+            ]
         };
 
         await SIStatisticsClient.SendGameReportAsync(gameReport);
@@ -376,6 +379,9 @@ internal sealed class GamesApiTests : TestsBase
             SIStatisticsClient.SendGameReportAsync(new GameReport
             {
                 Info = new GameResultInfo(new PackageInfo("", "", []))
+                {
+                    FinishTime = DateTimeOffset.UtcNow,
+                },
             }));
 
         Assert.Multiple(() =>
@@ -394,6 +400,7 @@ internal sealed class GamesApiTests : TestsBase
                 Info = new GameResultInfo(new PackageInfo("", "", []))
                 {
                     Platform = GamePlatforms.GameServer,
+                    FinishTime = DateTimeOffset.UtcNow,
                 }
             }));
 

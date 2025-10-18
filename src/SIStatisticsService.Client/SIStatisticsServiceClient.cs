@@ -14,9 +14,11 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters =
         {
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
+            new QuestionKeyJsonConverter()
         }
     };
 

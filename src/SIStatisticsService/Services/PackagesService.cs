@@ -1,6 +1,7 @@
 ﻿using LinqToDB;
 using Npgsql;
 using SIPackages;
+using SIPackages.Core;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
@@ -60,6 +61,13 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
                 for (int questionIndex = 0; questionIndex < theme.Questions.Count; questionIndex++)
                 {
                     var question = theme.Questions[questionIndex];
+
+                    if (question.GetContent().Any(ci => ci.Type != ContentTypes.Text))
+                    {
+                        // Skip non-text questions
+                        continue;
+                    }
+
                     var questionText = question.GetText();
                     int questionId;
 
@@ -84,7 +92,7 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
                     }
 
                     // Collect appellated and rejected answers for this question
-                    var collectedAnswers = await GetAppellatedAndRejectedAnswersAsync(themeId, questionId, cancellationToken);
+                    var collectedAnswers = await GetAppellatedAnswersAsync(themeId, questionId, cancellationToken);
                     
                     if (collectedAnswers.Count != 0)
                     {
@@ -273,7 +281,7 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         return (await connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
 
-    private async Task<List<CollectedAnswer>> GetAppellatedAndRejectedAnswersAsync(
+    private async Task<List<CollectedAnswer>> GetAppellatedAnswersAsync(
         int themeId,
         int questionId,
         CancellationToken cancellationToken)
@@ -283,7 +291,8 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
             join e in connection.Entities on r.EntityId equals e.Id
             where r.ThemeId == themeId && 
                   r.QuestionId == questionId && 
-                  (r.Type == Database.Models.Questions.RelationType.Apellated || r.Type == Database.Models.Questions.RelationType.Rejected)
+                  r.Type == Database.Models.Questions.RelationType.Apellated &&
+                  r.Count >= 5 // TODO: move to options later
             select new CollectedAnswer
             {
                 AnswerText = e.Name,

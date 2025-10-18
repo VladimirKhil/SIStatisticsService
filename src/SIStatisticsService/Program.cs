@@ -7,6 +7,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using Serilog;
 using SIStatisticsService.Configuration;
+using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
 using SIStatisticsService.EndpointDefinitions;
@@ -14,6 +15,7 @@ using SIStatisticsService.Metrics;
 using SIStatisticsService.Middlewares;
 using SIStatisticsService.Services;
 using System.Data.Common;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,14 @@ app.Run();
 static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
     services.Configure<SIStatisticsServiceOptions>(configuration.GetSection(SIStatisticsServiceOptions.ConfigurationSectionName));
+
+    // Configure JSON options to include QuestionKeyJsonConverter
+    services.ConfigureHttpJsonOptions(options =>
+    {
+        options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
+        options.SerializerOptions.Converters.Add(new QuestionKeyJsonConverter());
+    });
 
     services.AddSIStatisticsDatabase(configuration);
     ConfigureMigrationRunner(services, configuration);

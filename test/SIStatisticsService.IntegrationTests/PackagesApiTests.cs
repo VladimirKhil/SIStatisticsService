@@ -78,4 +78,100 @@ internal sealed class PackagesApiTests : TestsBase
             }
         }
     }
+
+    [Test]
+    public async Task UploadPackage_WithExistingAppellations_ReturnsCollectedAnswers()
+    {
+        // First, upload the package to establish the questions in the database
+        using (var fs = File.OpenRead("content.xml"))
+        {
+            await SIStatisticsClient.SendPackageContentAsync(fs);
+        }
+
+        // Simulate user reports for apellated answers with high count
+        // We need to submit multiple reports to reach the threshold (>=5)
+        var questionReport = new QuestionReport
+        {
+            ThemeName = "THEME 1",
+            QuestionText = "Text 1", 
+            ReportText = "Appellated Answer",
+            ReportType = QuestionReportType.Apellated
+        };
+
+        var packageInfo = new PackageInfo(
+            Name: "Test Package",
+            Hash: "test-hash-123",
+            Authors: ["Test Author"]
+        );
+
+        var gameResultInfo = new GameResultInfo(packageInfo)
+        {
+            FinishTime = DateTimeOffset.UtcNow
+        };
+
+        var gameReport = new GameReport
+        {
+            Info = gameResultInfo,
+            QuestionReports = [questionReport]
+        };
+
+        // Submit the report 6 times to exceed the threshold of 5
+        for (int i = 0; i < 6; i++)
+        {
+            await SIStatisticsClient.SendGameReportAsync(gameReport);
+        }
+
+        // Now upload the package again and check if CollectedAnswers contains the appellated answer
+        PackageImportResult? importResult;
+        
+        using (var fs = File.OpenRead("content.xml"))
+        {
+            importResult = await SIStatisticsClient.SendPackageContentAsync(fs);
+        }
+
+        // Verify the import result contains the collected answers
+        Assert.That(importResult, Is.Not.Null);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(importResult!.CollectedAnswers, Is.Not.Null);
+
+            // There should now be collected answers due to the appellations we submitted
+            Assert.That(importResult.CollectedAnswers, Is.Not.Empty,
+                "CollectedAnswers should contain appellated answers that exceeded the threshold");
+        });
+
+        // Verify the structure of collected answers
+        var firstAnswer = importResult.CollectedAnswers.First();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstAnswer.Key, Is.Not.Null);
+            Assert.That(firstAnswer.Value, Is.Not.Null);
+        });
+        
+        Assert.That(firstAnswer.Value, Is.Not.Empty);
+
+        var collectedAnswer = firstAnswer.Value.First();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(collectedAnswer.AnswerText, Is.EqualTo("Appellated Answer"));
+            Assert.That(collectedAnswer.RelationType, Is.EqualTo(RelationType.Apellated));
+            Assert.That(collectedAnswer.Count, Is.GreaterThanOrEqualTo(5));
+        });
+
+        // Debug output to see the actual structure
+        Console.WriteLine($"CollectedAnswers count: {importResult.CollectedAnswers.Count}");
+        
+        foreach (var kvp in importResult.CollectedAnswers)
+        {
+            Console.WriteLine($"Question {kvp.Key.RoundIndex},{kvp.Key.ThemeIndex},{kvp.Key.QuestionIndex}: {kvp.Value.Count} collected answers");
+            
+            foreach (var answer in kvp.Value)
+            {
+                Console.WriteLine($"  - {answer.AnswerText} (count: {answer.Count}, type: {answer.RelationType})");
+            }
+        }
+    }
 }

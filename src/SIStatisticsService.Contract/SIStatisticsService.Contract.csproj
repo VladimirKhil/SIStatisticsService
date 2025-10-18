@@ -5,13 +5,13 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <Description>SIStatisticsService contract</Description>
-    <Copyright>Copyright © Khil-soft 2023- 2025</Copyright>
+    <Copyright>Copyright © Khil-soft 2023 - 2025</Copyright>
     <PackageProjectUrl>https://github.com/VladimirKhil/SIStatisticsService</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VladimirKhil/SIStatisticsService</RepositoryUrl>
     <PackageTags>SIStatisticsService</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageId>VKhil.SIStatisticsService.Contract</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
