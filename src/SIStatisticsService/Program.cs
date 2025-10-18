@@ -46,14 +46,6 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 {
     services.Configure<SIStatisticsServiceOptions>(configuration.GetSection(SIStatisticsServiceOptions.ConfigurationSectionName));
 
-    // Configure JSON options to include QuestionKeyJsonConverter
-    services.ConfigureHttpJsonOptions(options =>
-    {
-        options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-        options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
-        options.SerializerOptions.Converters.Add(new QuestionKeyJsonConverter());
-    });
-
     services.AddSIStatisticsDatabase(configuration);
     ConfigureMigrationRunner(services, configuration);
 
