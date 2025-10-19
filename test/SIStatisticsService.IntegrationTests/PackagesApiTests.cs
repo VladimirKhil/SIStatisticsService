@@ -22,7 +22,8 @@ internal sealed class PackagesApiTests : TestsBase
 
         Assert.That(questionInfo, Is.Not.Null);
 
-        Assert.That(questionInfo!.Entities.Count, Is.EqualTo(4));
+        Assert.That(questionInfo!.Entities.Where(
+            e => e.RelationType == RelationType.Right || e.RelationType == RelationType.Wrong).Count, Is.EqualTo(4));
 
         var right1 = questionInfo.Entities.FirstOrDefault(e => e.EntityName == "Right answer 1");
         Assert.That(right1, Is.Not.Null);
@@ -106,7 +107,8 @@ internal sealed class PackagesApiTests : TestsBase
 
         var gameResultInfo = new GameResultInfo(packageInfo)
         {
-            FinishTime = DateTimeOffset.UtcNow
+            FinishTime = DateTimeOffset.UtcNow,
+            Platform = GamePlatforms.GameServer,
         };
 
         var gameReport = new GameReport

@@ -1,7 +1,6 @@
 ﻿using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Exceptions;
-using System.Xml;
 
 namespace SIStatisticsService.EndpointDefinitions;
 
@@ -36,17 +35,11 @@ internal static class AdminEndpointDefinitions
 
             var file = context.Request.Form.Files[0]
                 ?? throw new ServiceException(WellKnownSIStatisticServiceErrorCode.PackageFileNotFound, System.Net.HttpStatusCode.BadRequest);
-            
-            var package = new SIPackages.Package();
 
-            using (var stream = file.OpenReadStream())
-            using (var reader = XmlReader.Create(stream))
-            {
-                package.ReadXml(reader);
-            }
+            using var stream = file.OpenReadStream();
+            using var document = SIPackages.SIDocument.LoadXml(stream);
 
-            var result = await packagesService.ImportPackageAsync(package, cancellationToken);
-
+            var result = await packagesService.ImportPackageAsync(document.Package, cancellationToken);
             return Results.Ok(result);
         });
 
