@@ -50,4 +50,11 @@ public interface ISIStatisticsServiceClient
     /// <param name="questionText">Question text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<QuestionInfoResponse?> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets package statistics.
+    /// </summary>
+    /// <param name="request">Package statistics request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<PackageStats?> GetPackageStats(PackageStatsRequest request, CancellationToken cancellationToken = default);
 }

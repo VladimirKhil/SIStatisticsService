@@ -87,6 +87,7 @@ internal abstract class TestContainerBase
             options.TopPackageCount = 10;
             options.MaxResultCount = 100;
             options.MaximumGameDuration = TimeSpan.FromHours(10);
+            options.CollectedAnswersThreshold = 0;
         });
 
         // Add database services

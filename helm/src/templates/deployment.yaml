@@ -40,6 +40,8 @@ spec:
               value: '{{ .Values.options.topPackageCount }}'
             - name: SIStatistics__MaxResultCount
               value: '{{ .Values.options.maxResultCount }}'
+            - name: SIStatistics__CollectedAnswersThreshold
+              value: '{{ .Values.options.collectedAnswersTheshold }}'
             - name: Serilog__MinimumLevel
               value: '{{ .Values.options.logLevel }}'
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

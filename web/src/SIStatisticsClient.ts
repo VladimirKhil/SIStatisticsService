@@ -2,6 +2,8 @@ import SIStatisticsClientOptions from './SIStatisticsClientOptions';
 import GamesResponse from './models/GamesResponse';
 import GamesStatistic from './models/GamesStatistic';
 import PackagesStatistic from './models/PackagesStatistic';
+import PackageStats from './models/PackageStats';
+import PackageStatsRequest from './models/PackageStatsRequest';
 import StatisticFilter from './models/StatisticFilter';
 import TopPackagesRequest from './models/TopPackagesRequest';
 
@@ -32,6 +34,14 @@ export default class SIStatisticsClient {
 	 */
 	async getLatestTopPackagesAsync(request: TopPackagesRequest) {
 		return this.getAsync<PackagesStatistic>(`games/packages${this.buildRequest(request)}`);
+	}
+
+	/** Gets package statistics.
+	 * @param request Request for package statistics.
+	 */
+	async getPackageStats(request: PackageStatsRequest) {
+		const authors = request.authors.join(',');
+		return this.getAsync<PackageStats>(`games/packages/stats?name=${encodeURIComponent(request.name)}&hash=${encodeURIComponent(request.hash)}&authors=${encodeURIComponent(authors)}`);
 	}
 
 	private buildFilter(filter: StatisticFilter) {

@@ -40,6 +40,12 @@ public sealed class PackageModel
     public string? AuthorsContacts { get; set; }
 
     /// <summary>
+    /// Package statistics.
+    /// </summary>
+    [Column(DataType = DataType.BinaryJson), Nullable]
+    public PackageStatsModel? Stats { get; set; }
+
+    /// <summary>
     /// Marks the package as hidden.
     /// </summary>
     [Column(DataType = DataType.Boolean), NotNull]

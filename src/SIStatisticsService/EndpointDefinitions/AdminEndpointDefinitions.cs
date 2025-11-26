@@ -68,7 +68,7 @@ internal static class AdminEndpointDefinitions
                 throw new ServiceException(WellKnownSIStatisticServiceErrorCode.UnsupportedPlatform, System.Net.HttpStatusCode.BadRequest);
             }
 
-            await gamesService.AddGameResultAsync(gameInfo, cancellationToken);
+            await gamesService.AddGameResultAsync(gameInfo, gameReport.Stats, cancellationToken);
 
             foreach (var questionReport in gameReport.QuestionReports)
             {

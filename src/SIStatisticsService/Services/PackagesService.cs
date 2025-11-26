@@ -1,7 +1,9 @@
 ﻿using LinqToDB;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using SIPackages;
 using SIPackages.Core;
+using SIStatisticsService.Configuration;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
 using SIStatisticsService.Database;
@@ -12,16 +14,26 @@ using SIStatisticsService.Metrics;
 namespace SIStatisticsService.Services;
 
 /// <inheritdoc cref="IPackagesService" />
-public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMetrics metrics, ILogger<PackagesService> logger) : IPackagesService
+public sealed class PackagesService(
+    SIStatisticsDbConnection connection,
+    OtelMetrics metrics,
+    IOptions<SIStatisticsServiceOptions> options,
+    ILogger<PackagesService> logger) : IPackagesService
 {
+    private readonly SIStatisticsServiceOptions _options = options.Value;
+
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
     {
+        // Normalize the input parameters to match how they are stored in the database
+        var normalizedThemeName = ValueNormalizer.Normalize(themeName);
+        var normalizedQuestionText = ValueNormalizer.Normalize(questionText);
+
         var query =
             from r in connection.Relations
             join t in connection.Themes on r.ThemeId equals t.Id
             join q in connection.Questions on r.QuestionId equals q.Id
             join e in connection.Entities on r.EntityId equals e.Id
-            where t.Name == themeName && q.Text == questionText
+            where t.Name == normalizedThemeName && q.Text == normalizedQuestionText
             select new EntityInfoResponse
             {
                 EntityName = e.Name,
@@ -42,7 +54,7 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         for (int roundIndex = 0; roundIndex < package.Rounds.Count; roundIndex++)
         {
             var round = package.Rounds[roundIndex];
-            
+
             for (int themeIndex = 0; themeIndex < round.Themes.Count; themeIndex++)
             {
                 var theme = round.Themes[themeIndex];
@@ -92,8 +104,8 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
                     }
 
                     // Collect appellated and rejected answers for this question
-                    var collectedAnswers = await GetAppellatedAnswersAsync(themeId, questionId, cancellationToken);
-                    
+                    var collectedAnswers = await GetAppellatedAndRejectedAnswersAsync(themeId, questionId, cancellationToken);
+
                     if (collectedAnswers.Count != 0)
                     {
                         var questionKey = new QuestionKey(roundIndex, themeIndex, questionIndex);
@@ -281,7 +293,7 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         return (await connection.Themes.FirstAsync(t => t.Name == themeName, token: cancellationToken)).Id;
     }
 
-    private async Task<List<CollectedAnswer>> GetAppellatedAnswersAsync(
+    private async Task<List<CollectedAnswer>> GetAppellatedAndRejectedAnswersAsync(
         int themeId,
         int questionId,
         CancellationToken cancellationToken)
@@ -289,10 +301,11 @@ public sealed class PackagesService(SIStatisticsDbConnection connection, OtelMet
         var query =
             from r in connection.Relations
             join e in connection.Entities on r.EntityId equals e.Id
-            where r.ThemeId == themeId && 
-                  r.QuestionId == questionId && 
-                  r.Type == Database.Models.Questions.RelationType.Apellated &&
-                  r.Count >= 5 // TODO: move to options later
+            where r.ThemeId == themeId &&
+                  r.QuestionId == questionId &&
+                  (r.Type == Database.Models.Questions.RelationType.Apellated ||
+                  r.Type == Database.Models.Questions.RelationType.Rejected) &&
+                  r.Count >= _options.CollectedAnswersThreshold
             select new CollectedAnswer
             {
                 AnswerText = e.Name,

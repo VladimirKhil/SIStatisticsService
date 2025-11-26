@@ -44,6 +44,26 @@ internal static class GamesEndpointDefinitions
             return Results.Ok(packagesStatistic);
         });
 
+        // GET /api/v1/games/packages/stats
+        gamesGroup.MapGet("/packages/stats", async (
+            IGamesService gamesService,
+            string name,
+            string hash,
+            string authors,
+            CancellationToken cancellationToken = default) =>
+        {
+            var authorsArray = authors.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var request = new PackageStatsRequest(name, hash, authorsArray);
+            var packageStats = await gamesService.GetPackageStatsAsync(request, cancellationToken);
+
+            if (packageStats == null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(packageStats);
+        });
+
         // POST /api/v1/games/reports
         gamesGroup.MapPost("/reports", async (
             IGamesService gamesService,
@@ -75,7 +95,8 @@ internal static class GamesEndpointDefinitions
                 throw new ServiceException(WellKnownSIStatisticServiceErrorCode.InvalidDuration, System.Net.HttpStatusCode.BadRequest);
             }
 
-            await gamesService.AddGameResultAsync(gameInfo, cancellationToken);
+            // Non-admin endpoint does not process question stats
+            await gamesService.AddGameResultAsync(gameInfo, null, cancellationToken);
 
             foreach (var questionReport in gameReport.QuestionReports)
             {

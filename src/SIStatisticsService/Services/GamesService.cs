@@ -191,7 +191,10 @@ public sealed class GamesService(
         };
     }
 
-    public async Task<int> AddGameResultAsync(GameResultInfo gameResult, CancellationToken cancellationToken)
+    public async Task<int> AddGameResultAsync(
+        GameResultInfo gameResult,
+        PackageStats? packageStats,
+        CancellationToken cancellationToken)
     {
         if (gameResult.FinishTime == DateTimeOffset.MinValue)
         {
@@ -199,7 +202,7 @@ public sealed class GamesService(
         }
 
         using var tx = await connection.BeginTransactionAsync(cancellationToken);
-        var packageId = await InsertOrUpdatePackageAsync(gameResult.Package, cancellationToken);
+        var packageId = await InsertOrUpdatePackageAsync(gameResult.Package, packageStats, cancellationToken);
         var languageId = await GetLanguageIdAsync(gameResult.LanguageCode, cancellationToken);
         var gameId = await InsertGameAsync(gameResult, packageId, languageId, cancellationToken);
         await tx.CommitAsync(cancellationToken);
@@ -207,6 +210,34 @@ public sealed class GamesService(
         metrics.AddGameReport();
 
         return gameId;
+    }
+
+    public async Task<PackageStats?> GetPackageStatsAsync(PackageStatsRequest request, CancellationToken cancellationToken = default)
+    {
+        // Find the package first
+        var package = await connection.Packages
+            .FirstOrDefaultAsync(p => p.Name == request.Name &&
+                                    p.Hash == request.Hash &&
+                                    p.Authors == request.Authors,
+                                cancellationToken);
+
+        if (package == null || package.Hidden || package.Stats == null)
+        {
+            return null;
+        }
+
+        var stats = package.Stats;
+        var topLevelStats = new PackageTopLevelStats(stats.TopLevelStats.CompletedGameCount);
+
+        var questionStats = stats.QuestionStats.ToDictionary(
+            qs => qs.Key,
+            qs => new QuestionStats(
+                qs.Value.ShownCount,
+                qs.Value.PlayerSeenCount,
+                qs.Value.CorrectCount,
+                qs.Value.WrongCount));
+
+        return new PackageStats(topLevelStats, questionStats);
     }
 
     private async Task<int?> GetLanguageIdAsync(string? languageCode, CancellationToken cancellationToken)
@@ -235,7 +266,10 @@ public sealed class GamesService(
             cancellationToken
         );
 
-    private async Task<int> InsertOrUpdatePackageAsync(PackageInfo packageInfo, CancellationToken cancellationToken)
+    private async Task<int> InsertOrUpdatePackageAsync(
+        PackageInfo packageInfo,
+        PackageStats? packageStats,
+        CancellationToken cancellationToken)
     {
         await connection.Packages.InsertOrUpdateAsync(
             () => new PackageModel
@@ -289,7 +323,85 @@ public sealed class GamesService(
                 cancellationToken);
         }
 
+        if (packageStats != null)
+        {
+            await UpdatePackageStatsAsync(packageId, packageStats, cancellationToken);
+        }
+
         return packageId;
+    }
+
+    private async Task UpdatePackageStatsAsync(int packageId, PackageStats packageStats, CancellationToken cancellationToken)
+    {
+        // Get the current package with its stats
+        var existingPackage = await connection.Packages.FirstOrDefaultAsync(p => p.Id == packageId, cancellationToken);
+
+        if (existingPackage == null)
+        {
+            return;
+        }
+
+        PackageStatsModel newStatsModel;
+
+        if (existingPackage.Stats == null)
+        {
+            // No existing stats, create new ones
+            var topLevelStats = new PackageTopLevelStatsModel(packageStats.TopLevelStats.CompletedGameCount);
+
+            var questionStats = packageStats.QuestionStats.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new QuestionStatsModel(
+                    kvp.Value.ShownCount,
+                    kvp.Value.PlayerSeenCount,
+                    kvp.Value.CorrectCount,
+                    kvp.Value.WrongCount));
+
+            newStatsModel = new PackageStatsModel(topLevelStats, questionStats);
+        }
+        else
+        {
+            // Merge existing stats with new stats
+            var existingStats = existingPackage.Stats;
+
+            // Merge top-level stats by adding completed game counts
+            var mergedTopLevelStats = new PackageTopLevelStatsModel(
+                existingStats.TopLevelStats.CompletedGameCount + packageStats.TopLevelStats.CompletedGameCount);
+
+            // Merge question stats
+            var mergedQuestionStats = new Dictionary<string, QuestionStatsModel>(existingStats.QuestionStats);
+
+            foreach (var newQuestionStat in packageStats.QuestionStats)
+            {
+                var questionKey = newQuestionStat.Key;
+                var newStats = newQuestionStat.Value;
+
+                if (mergedQuestionStats.TryGetValue(questionKey, out var existingQuestionStats))
+                {
+                    // Merge existing question stats with new stats by adding counts
+                    mergedQuestionStats[questionKey] = new QuestionStatsModel(
+                        existingQuestionStats.ShownCount + newStats.ShownCount,
+                        existingQuestionStats.PlayerSeenCount + newStats.PlayerSeenCount,
+                        existingQuestionStats.CorrectCount + newStats.CorrectCount,
+                        existingQuestionStats.WrongCount + newStats.WrongCount);
+                }
+                else
+                {
+                    // Add new question stats
+                    mergedQuestionStats[questionKey] = new QuestionStatsModel(
+                        newStats.ShownCount,
+                        newStats.PlayerSeenCount,
+                        newStats.CorrectCount,
+                        newStats.WrongCount);
+                }
+            }
+
+            newStatsModel = new PackageStatsModel(mergedTopLevelStats, mergedQuestionStats);
+        }
+
+        // Update the package with the new stats
+        await connection.Packages
+            .Where(p => p.Id == packageId)
+            .UpdateAsync(p => new PackageModel { Stats = newStatsModel }, cancellationToken);
     }
 
     private static int GetMaxItemCount(StatisticFilter statisticFilter, int defaultValue) =>

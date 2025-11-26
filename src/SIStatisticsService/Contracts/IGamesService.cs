@@ -25,8 +25,9 @@ public interface IGamesService
     /// Adds new game result record.
     /// </summary>
     /// <param name="gameResult">Game result.</param>
+    /// <param name="packageStats">Package statistics.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<int> AddGameResultAsync(GameResultInfo gameResult, CancellationToken cancellationToken = default);
+    Task<int> AddGameResultAsync(GameResultInfo gameResult, PackageStats? packageStats = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets cumulative latest games statistic.
@@ -41,4 +42,11 @@ public interface IGamesService
     /// <param name="packagesRequest>Request parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<PackagesStatistic> GetPackagesStatisticAsync(TopPackagesRequest packagesRequest, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets package statistics including question-level performance data.
+    /// </summary>
+    /// <param name="request">Package statistics request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<PackageStats?> GetPackageStatsAsync(PackageStatsRequest request, CancellationToken cancellationToken = default);
 }

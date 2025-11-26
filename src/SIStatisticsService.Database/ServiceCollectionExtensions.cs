@@ -4,6 +4,7 @@ using LinqToDB.AspNet.Logging;
 using LinqToDB.Data.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SIStatisticsService.Database.Models.Games;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SIStatisticsService.Database;
@@ -34,5 +35,6 @@ public static class ServiceCollectionExtensions
         DatabaseExtensions.InitJsonConversion<string[]>();
         DatabaseExtensions.InitJsonConversion<Dictionary<string, int>>();
         DatabaseExtensions.InitJsonConversion<Dictionary<string, string>>();
+        DatabaseExtensions.InitJsonConversion<PackageStatsModel>();
     }
 }

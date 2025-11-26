@@ -44,6 +44,7 @@ database:
 options:
   topPackageCount: 10
   maxResultCount: 100
+  collectedAnswersTheshold: 8
   logLevel: Warning
   otel:
     uri: 'http://localhost:4317'

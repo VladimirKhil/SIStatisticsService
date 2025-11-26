@@ -19,4 +19,9 @@ public sealed class GameReport
     /// Question reports.
     /// </summary>
     public QuestionReport[] QuestionReports { get; set; } = Array.Empty<QuestionReport>();
+
+    /// <summary>
+    /// Game statistics.
+    /// </summary>
+    public PackageStats? Stats { get; set; }
 }

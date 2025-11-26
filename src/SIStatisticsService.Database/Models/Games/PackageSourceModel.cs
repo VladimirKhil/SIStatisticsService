@@ -17,6 +17,7 @@ public sealed class PackageSourceModel
 
     /// <summary>
     /// Source type identifier.
+    /// </summary>
     [PrimaryKey, Column(DataType = DataType.Int32), NotNull]
     public int SourceTypeId { get; set; }
 

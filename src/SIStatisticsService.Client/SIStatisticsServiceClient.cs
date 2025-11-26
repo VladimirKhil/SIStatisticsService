@@ -57,7 +57,7 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
     public async Task SendGameReportAsync(GameReport gameReport, CancellationToken cancellationToken = default)
     {
         var response = await _client.PostAsJsonAsync(_isAdmin ? "admin/reports" : "games/reports", gameReport, cancellationToken);
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw await GetErrorAsync(response, cancellationToken);
@@ -79,6 +79,17 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
 
         return await response.Content.ReadFromJsonAsync<PackageImportResult>(SerializerOptions, cancellationToken);
     }
+
+    public Task<PackageStats?> GetPackageStats(PackageStatsRequest request, CancellationToken cancellationToken = default) =>
+        GetJsonAsync<PackageStats>(
+            "games/packages/stats",
+            new Dictionary<string, object>
+            {
+                ["name"] = request.Name,
+                ["hash"] = request.Hash,
+                ["authors"] = string.Join(",", request.Authors)
+            },
+            cancellationToken);
 
     private Task<T?> GetJsonAsync<T>(string uri, Dictionary<string, object> parameters, CancellationToken cancellationToken)
     {
@@ -112,7 +123,7 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
     private static Dictionary<string, object> BuildRequest(TopPackagesRequest request)
     {
         var filter = BuildFilter(request.StatisticFilter);
-        
+
         if (request.Source != null)
         {
             filter["source"] = request.Source.ToString();

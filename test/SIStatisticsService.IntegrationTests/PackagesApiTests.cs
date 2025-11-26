@@ -8,7 +8,7 @@ internal sealed class PackagesApiTests : TestsBase
     public async Task UploadPackage_Ok()
     {
         PackageImportResult? importResult;
-        
+
         using (var fs = File.OpenRead("content.xml"))
         {
             importResult = await SIStatisticsClient.SendPackageContentAsync(fs);
@@ -42,7 +42,7 @@ internal sealed class PackagesApiTests : TestsBase
     public async Task UploadPackage_ReturnsCollectedAnswers()
     {
         PackageImportResult? importResult;
-        
+
         using (var fs = File.OpenRead("content.xml"))
         {
             importResult = await SIStatisticsClient.SendPackageContentAsync(fs);
@@ -50,7 +50,7 @@ internal sealed class PackagesApiTests : TestsBase
 
         // Verify the package import result structure
         Assert.That(importResult, Is.Not.Null);
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(importResult!.CollectedAnswers, Is.Not.Null);
@@ -60,7 +60,7 @@ internal sealed class PackagesApiTests : TestsBase
         });
 
         // For a fresh import, the collected answers might be empty, but the structure should be valid
-        foreach (var kvp in importResult.CollectedAnswers)
+        foreach (var kvp in importResult!.CollectedAnswers)
         {
             Assert.Multiple(() =>
             {
@@ -125,7 +125,7 @@ internal sealed class PackagesApiTests : TestsBase
 
         // Now upload the package again and check if CollectedAnswers contains the appellated answer
         PackageImportResult? importResult;
-        
+
         using (var fs = File.OpenRead("content.xml"))
         {
             importResult = await SIStatisticsClient.SendPackageContentAsync(fs);
@@ -133,7 +133,7 @@ internal sealed class PackagesApiTests : TestsBase
 
         // Verify the import result contains the collected answers
         Assert.That(importResult, Is.Not.Null);
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(importResult!.CollectedAnswers, Is.Not.Null);
@@ -144,18 +144,18 @@ internal sealed class PackagesApiTests : TestsBase
         });
 
         // Verify the structure of collected answers
-        var firstAnswer = importResult.CollectedAnswers.First();
-        
+        var firstAnswer = importResult!.CollectedAnswers.First();
+
         Assert.Multiple(() =>
         {
             Assert.That(firstAnswer.Key, Is.Not.Null);
             Assert.That(firstAnswer.Value, Is.Not.Null);
         });
-        
+
         Assert.That(firstAnswer.Value, Is.Not.Empty);
 
         var collectedAnswer = firstAnswer.Value.First();
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(collectedAnswer.AnswerText, Is.EqualTo("Appellated Answer"));
@@ -165,11 +165,11 @@ internal sealed class PackagesApiTests : TestsBase
 
         // Debug output to see the actual structure
         Console.WriteLine($"CollectedAnswers count: {importResult.CollectedAnswers.Count}");
-        
+
         foreach (var kvp in importResult.CollectedAnswers)
         {
             Console.WriteLine($"Question {kvp.Key.RoundIndex},{kvp.Key.ThemeIndex},{kvp.Key.QuestionIndex}: {kvp.Value.Count} collected answers");
-            
+
             foreach (var answer in kvp.Value)
             {
                 Console.WriteLine($"  - {answer.AnswerText} (count: {answer.Count}, type: {answer.RelationType})");

@@ -21,4 +21,9 @@ public sealed class SIStatisticsServiceOptions
     /// Maximum allowed game duration.
     /// </summary>
     public TimeSpan MaximumGameDuration { get; set; } = TimeSpan.FromHours(10);
+
+    /// <summary>
+    /// Gets or sets the threshold for the number of events for answer to be returned to client.
+    /// </summary>
+    public int CollectedAnswersThreshold { get; set; } = 8;
 }

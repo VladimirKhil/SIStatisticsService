@@ -1,4 +1,5 @@
 ﻿using FluentMigrator.Builders;
+using FluentMigrator.Builders.Alter.Table;
 using FluentMigrator.Builders.Create.Table;
 using LinqToDB.Mapping;
 using Npgsql;
@@ -57,5 +58,8 @@ public static class DatabaseExtensions
             ?? throw new ArgumentException($"Invalid value {value} for deserialization to type {typeof(T)}"));
 
     internal static ICreateTableColumnOptionOrWithColumnSyntax AsJsonb(this IColumnTypeSyntax<ICreateTableColumnOptionOrWithColumnSyntax> builder) =>
+        builder.AsCustom("jsonb");
+
+    internal static IAlterTableColumnOptionOrAddColumnOrAlterColumnSyntax AsJsonb(this IAlterTableColumnAsTypeSyntax builder) =>
         builder.AsCustom("jsonb");
 }
