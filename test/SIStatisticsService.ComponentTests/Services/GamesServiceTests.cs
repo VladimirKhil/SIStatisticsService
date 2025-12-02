@@ -229,11 +229,11 @@ internal sealed class GamesServiceTests : TestsBase
         };
 
         var packageStats = new PackageStats(
-            new PackageTopLevelStats(5),
+            new PackageTopLevelStats(6, 5),
             new Dictionary<string, QuestionStats>
             {
-                ["question1"] = new QuestionStats(10, 8, 3, 5),
-                ["question2"] = new QuestionStats(15, 12, 7, 5)
+                ["question1"] = new QuestionStats(10, 8, 4, 3, 5),
+                ["question2"] = new QuestionStats(15, 12, 4, 7, 5)
             }
         );
 
@@ -301,11 +301,11 @@ internal sealed class GamesServiceTests : TestsBase
         };
 
         var firstStats = new PackageStats(
-            new PackageTopLevelStats(3),
+            new PackageTopLevelStats(5, 3),
             new Dictionary<string, QuestionStats>
             {
-                ["question1"] = new QuestionStats(5, 4, 2, 1),
-                ["question2"] = new QuestionStats(8, 6, 3, 2)
+                ["question1"] = new QuestionStats(5, 4, 2, 2, 1),
+                ["question2"] = new QuestionStats(8, 6, 3, 3, 2)
             }
         );
 
@@ -321,11 +321,11 @@ internal sealed class GamesServiceTests : TestsBase
         };
 
         var secondStats = new PackageStats(
-            new PackageTopLevelStats(2),
+            new PackageTopLevelStats(6, 2),
             new Dictionary<string, QuestionStats>
             {
-                ["question1"] = new QuestionStats(3, 2, 1, 2), // Should be merged with existing
-                ["question3"] = new QuestionStats(4, 3, 2, 1)  // New question
+                ["question1"] = new QuestionStats(3, 2, 1, 1, 2), // Should be merged with existing
+                ["question3"] = new QuestionStats(4, 3, 2, 2, 1)  // New question
             }
         );
 
@@ -388,7 +388,7 @@ internal sealed class GamesServiceTests : TestsBase
         };
 
         var emptyStats = new PackageStats(
-            new PackageTopLevelStats(1),
+            new PackageTopLevelStats(1, 1),
             []
         );
 
@@ -425,10 +425,10 @@ internal sealed class GamesServiceTests : TestsBase
             };
 
             var stats = new PackageStats(
-                new PackageTopLevelStats(i), // 1, 2, 3
+                new PackageTopLevelStats(i, i), // 1, 2, 3
                 new Dictionary<string, QuestionStats>
                 {
-                    ["common_question"] = new QuestionStats(i, i, i, i) // Incrementing values
+                    ["common_question"] = new QuestionStats(i, i, i, i, i) // Incrementing values
                 }
             );
 
@@ -464,18 +464,18 @@ internal sealed class GamesServiceTests : TestsBase
         var package3Info = new PackageInfo($"Package {randomId}", "hash1", [$"Author B {randomId}"]); // Different author
 
         var stats1 = new PackageStats(
-            new PackageTopLevelStats(10),
-            new Dictionary<string, QuestionStats> { ["q1"] = new QuestionStats(1, 1, 1, 1) }
+            new PackageTopLevelStats(10, 10),
+            new Dictionary<string, QuestionStats> { ["q1"] = new QuestionStats(1, 1, 1, 1, 1) }
         );
 
         var stats2 = new PackageStats(
-            new PackageTopLevelStats(20),
-            new Dictionary<string, QuestionStats> { ["q2"] = new QuestionStats(2, 2, 2, 2) }
+            new PackageTopLevelStats(20, 20),
+            new Dictionary<string, QuestionStats> { ["q2"] = new QuestionStats(2, 2, 2, 2, 2) }
         );
 
         var stats3 = new PackageStats(
-            new PackageTopLevelStats(30),
-            new Dictionary<string, QuestionStats> { ["q3"] = new QuestionStats(3, 3, 3, 3) }
+            new PackageTopLevelStats(30, 30),
+            new Dictionary<string, QuestionStats> { ["q3"] = new QuestionStats(3, 3, 3, 3, 3) }
         );
 
         // Add games for each package

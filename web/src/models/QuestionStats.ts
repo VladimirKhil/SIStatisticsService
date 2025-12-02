@@ -6,6 +6,9 @@ export default interface QuestionStats {
 	/** Number of players that have seen the question. */
 	playerSeenCount: number;
 
+	/** Number of times question was answered. */
+	answeredCount: number;
+
 	/** Number of correct answers for the question. */
 	correctCount: number;
 

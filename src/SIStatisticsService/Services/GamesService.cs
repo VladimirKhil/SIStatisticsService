@@ -227,13 +227,14 @@ public sealed class GamesService(
         }
 
         var stats = package.Stats;
-        var topLevelStats = new PackageTopLevelStats(stats.TopLevelStats.CompletedGameCount);
+        var topLevelStats = new PackageTopLevelStats(stats.TopLevelStats.StartedGameCount, stats.TopLevelStats.CompletedGameCount);
 
         var questionStats = stats.QuestionStats.ToDictionary(
             qs => qs.Key,
             qs => new QuestionStats(
                 qs.Value.ShownCount,
                 qs.Value.PlayerSeenCount,
+                qs.Value.AnsweredCount,
                 qs.Value.CorrectCount,
                 qs.Value.WrongCount));
 
@@ -346,13 +347,14 @@ public sealed class GamesService(
         if (existingPackage.Stats == null)
         {
             // No existing stats, create new ones
-            var topLevelStats = new PackageTopLevelStatsModel(packageStats.TopLevelStats.CompletedGameCount);
+            var topLevelStats = new PackageTopLevelStatsModel(1, packageStats.TopLevelStats.CompletedGameCount);
 
             var questionStats = packageStats.QuestionStats.ToDictionary(
                 kvp => kvp.Key,
                 kvp => new QuestionStatsModel(
                     kvp.Value.ShownCount,
                     kvp.Value.PlayerSeenCount,
+                    kvp.Value.CorrectCount + kvp.Value.WrongCount > 0 ? kvp.Value.ShownCount : 0,
                     kvp.Value.CorrectCount,
                     kvp.Value.WrongCount));
 
@@ -365,6 +367,7 @@ public sealed class GamesService(
 
             // Merge top-level stats by adding completed game counts
             var mergedTopLevelStats = new PackageTopLevelStatsModel(
+                existingStats.TopLevelStats.StartedGameCount + 1,
                 existingStats.TopLevelStats.CompletedGameCount + packageStats.TopLevelStats.CompletedGameCount);
 
             // Merge question stats
@@ -381,6 +384,9 @@ public sealed class GamesService(
                     mergedQuestionStats[questionKey] = new QuestionStatsModel(
                         existingQuestionStats.ShownCount + newStats.ShownCount,
                         existingQuestionStats.PlayerSeenCount + newStats.PlayerSeenCount,
+                        newStats.CorrectCount + newStats.WrongCount > 0
+                            ? existingQuestionStats.ShownCount + newStats.ShownCount
+                            : existingQuestionStats.ShownCount,
                         existingQuestionStats.CorrectCount + newStats.CorrectCount,
                         existingQuestionStats.WrongCount + newStats.WrongCount);
                 }
@@ -390,6 +396,7 @@ public sealed class GamesService(
                     mergedQuestionStats[questionKey] = new QuestionStatsModel(
                         newStats.ShownCount,
                         newStats.PlayerSeenCount,
+                        newStats.CorrectCount + newStats.WrongCount > 0 ? newStats.ShownCount : 0,
                         newStats.CorrectCount,
                         newStats.WrongCount);
                 }

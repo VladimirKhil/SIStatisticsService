@@ -80,7 +80,7 @@ internal sealed class GamesApiTests : TestsBase
                 ["Ken"] = 3555,
                 ["George"] = 800
             },
-            Reviews = new Dictionary<string, string> { }
+            Reviews = []
         };
 
         var gameReport2 = new GameReport
@@ -131,7 +131,7 @@ internal sealed class GamesApiTests : TestsBase
                 ["Ted"] = 3000,
                 ["John"] = -20000
             },
-            Reviews = new Dictionary<string, string> { }
+            Reviews = []
         };
 
         var gameReport4 = new GameReport
@@ -240,15 +240,15 @@ internal sealed class GamesApiTests : TestsBase
 
         // Create comprehensive package stats to test
         var packageStats = new PackageStats(
-            new PackageTopLevelStats(15), // 15 completed games
+            new PackageTopLevelStats(15, 15), // 15 completed games
             new Dictionary<string, QuestionStats>
             {
-                ["Round1_Science_Q1"] = new QuestionStats(50, 45, 32, 13), // High success rate question
-                ["Round1_Science_Q2"] = new QuestionStats(48, 42, 28, 14),
-                ["Round1_History_Q1"] = new QuestionStats(55, 50, 35, 15),
-                ["Round2_Literature_Q1"] = new QuestionStats(40, 38, 25, 13),
-                ["Round2_Geography_Q1"] = new QuestionStats(45, 40, 20, 20), // Lower success rate
-                ["Final_Mixed_Q1"] = new QuestionStats(30, 28, 18, 10) // Final round question
+                ["Round1_Science_Q1"] = new QuestionStats(50, 45, 30, 32, 13), // High success rate question
+                ["Round1_Science_Q2"] = new QuestionStats(48, 42, 40, 28, 14),
+                ["Round1_History_Q1"] = new QuestionStats(55, 50, 50, 35, 15),
+                ["Round2_Literature_Q1"] = new QuestionStats(40, 38, 37, 25, 13),
+                ["Round2_Geography_Q1"] = new QuestionStats(45, 40, 40, 20, 20), // Lower success rate
+                ["Final_Mixed_Q1"] = new QuestionStats(30, 28, 20, 18, 10) // Final round question
             }
         );
 
@@ -257,7 +257,7 @@ internal sealed class GamesApiTests : TestsBase
             Id = Guid.NewGuid(),
             Info = gameResultInfo,
             Stats = packageStats,
-            QuestionReports = Array.Empty<QuestionReport>()
+            QuestionReports = []
         };
 
         // Act 1 - Send game report with stats
@@ -351,11 +351,11 @@ internal sealed class GamesApiTests : TestsBase
         };
 
         var firstStats = new PackageStats(
-            new PackageTopLevelStats(5), // 5 completed games in first batch
+            new PackageTopLevelStats(5, 5), // 5 completed games in first batch
             new Dictionary<string, QuestionStats>
             {
-                ["common_question"] = new QuestionStats(20, 18, 12, 6),
-                ["first_batch_question"] = new QuestionStats(15, 14, 10, 4)
+                ["common_question"] = new QuestionStats(20, 18, 10, 12, 6),
+                ["first_batch_question"] = new QuestionStats(15, 14, 7, 10, 4)
             }
         );
 
@@ -379,11 +379,11 @@ internal sealed class GamesApiTests : TestsBase
         };
 
         var secondStats = new PackageStats(
-            new PackageTopLevelStats(3), // 3 additional completed games
+            new PackageTopLevelStats(3, 3), // 3 additional completed games
             new Dictionary<string, QuestionStats>
             {
-                ["common_question"] = new QuestionStats(12, 10, 8, 2), // Should merge with existing
-                ["second_batch_question"] = new QuestionStats(8, 7, 5, 2) // New question
+                ["common_question"] = new QuestionStats(12, 10, 6, 8, 2), // Should merge with existing
+                ["second_batch_question"] = new QuestionStats(8, 7, 5, 5, 2) // New question
             }
         );
 
@@ -495,15 +495,15 @@ internal sealed class GamesApiTests : TestsBase
         };
 
         var packageStats = new PackageStats(
-            new PackageTopLevelStats(25),
+            new PackageTopLevelStats(25, 25),
             new Dictionary<string, QuestionStats>
             {
                 // Question keys with various international characters and symbols
-                ["Тема: История России_Вопрос №1"] = new QuestionStats(100, 85, 70, 15), // Cyrillic
-                ["テーマ：日本の文化_質問1"] = new QuestionStats(80, 70, 55, 15), // Japanese
-                ["Thème: Culture française_Question #1"] = new QuestionStats(90, 75, 60, 15), // French
-                ["主题：中国历史_问题1"] = new QuestionStats(85, 72, 58, 14), // Chinese
-                ["Special@Chars_Question!@#$%^&*()"] = new QuestionStats(60, 50, 35, 15) // Special chars
+                ["Тема: История России_Вопрос №1"] = new QuestionStats(100, 85, 70, 70, 15), // Cyrillic
+                ["テーマ：日本の文化_質問1"] = new QuestionStats(80, 70, 55, 55, 15), // Japanese
+                ["Thème: Culture française_Question #1"] = new QuestionStats(90, 75, 60, 60, 15), // French
+                ["主题：中国历史_问题1"] = new QuestionStats(85, 72, 60, 58, 14), // Chinese
+                ["Special@Chars_Question!@#$%^&*()"] = new QuestionStats(60, 50, 40, 35, 15) // Special chars
             }
         );
 
