@@ -385,8 +385,8 @@ public sealed class GamesService(
                         existingQuestionStats.ShownCount + newStats.ShownCount,
                         existingQuestionStats.PlayerSeenCount + newStats.PlayerSeenCount,
                         newStats.CorrectCount + newStats.WrongCount > 0
-                            ? existingQuestionStats.ShownCount + newStats.ShownCount
-                            : existingQuestionStats.ShownCount,
+                            ? existingQuestionStats.AnsweredCount + newStats.ShownCount
+                            : existingQuestionStats.AnsweredCount,
                         existingQuestionStats.CorrectCount + newStats.CorrectCount,
                         existingQuestionStats.WrongCount + newStats.WrongCount);
                 }
