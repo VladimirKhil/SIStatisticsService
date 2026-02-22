@@ -46,6 +46,68 @@ public sealed class GamesService(
         return await query.OrderByDescending(gri => gri.FinishTime).Take(maxCount).ToArrayAsync(cancellationToken);
     }
 
+    public async Task<PackageInfoResponse?> GetPackageInfoAsync(PackageInfoRequest request, CancellationToken cancellationToken = default)
+    {
+        // Find the package first
+        var package = await connection.Packages
+            .FirstOrDefaultAsync(p => p.Name == request.Name && p.Hash == request.Hash && p.Authors == request.Authors,
+                cancellationToken);
+
+        if (package == null || package.Hidden)
+        {
+            return null;
+        }
+
+        // Determine final source using provided request.Source (preferred) or first available
+        Uri? finalSource = null;
+
+        var packageSources = await connection.PackageSources
+            .Where(ps => ps.PackageId == package.Id)
+            .ToArrayAsync(cancellationToken);
+
+        if (request.Source != null)
+        {
+            var sourceTypeId = request.Source.GetStableHostHash();
+            var match = packageSources.FirstOrDefault(ps => ps.SourceTypeId == sourceTypeId);
+            if (match != null)
+            {
+                finalSource = new Uri(match.Source);
+            }
+        }
+
+        if (finalSource == null)
+        {
+            var first = packageSources.FirstOrDefault();
+            if (first != null)
+            {
+                finalSource = new Uri(first.Source);
+            }
+        }
+
+        var packageInfo = new PackageInfo(package.Name, package.Hash, package.Authors, package.AuthorsContacts, finalSource);
+
+        PackageStats? stats = null;
+
+        if (request.IncludeStats && package.Stats != null)
+        {
+            var s = package.Stats;
+            var topLevelStats = new PackageTopLevelStats(s.TopLevelStats.StartedGameCount, s.TopLevelStats.CompletedGameCount);
+
+            var questionStats = s.QuestionStats.ToDictionary(
+                qs => qs.Key,
+                qs => new QuestionStats(
+                    qs.Value.ShownCount,
+                    qs.Value.PlayerSeenCount,
+                    qs.Value.AnsweredCount,
+                    qs.Value.CorrectCount,
+                    qs.Value.WrongCount));
+
+            stats = new PackageStats(topLevelStats, questionStats);
+        }
+
+        return new PackageInfoResponse(packageInfo, stats);
+    }
+
     public async Task<GameResultInfo?> TryGetGameAsync(int gameId, CancellationToken cancellationToken)
     {
         var query =

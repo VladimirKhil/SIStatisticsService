@@ -49,4 +49,11 @@ public interface IGamesService
     /// <param name="request">Package statistics request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<PackageStats?> GetPackageStatsAsync(PackageStatsRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets package info and optionally its statistics.
+    /// </summary>
+    /// <param name="request">Package info request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<PackageInfoResponse?> GetPackageInfoAsync(PackageInfoRequest request, CancellationToken cancellationToken = default);
 }

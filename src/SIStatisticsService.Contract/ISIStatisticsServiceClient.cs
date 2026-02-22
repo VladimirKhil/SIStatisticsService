@@ -57,4 +57,11 @@ public interface ISIStatisticsServiceClient
     /// <param name="request">Package statistics request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<PackageStats?> GetPackageStats(PackageStatsRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets single package info and optionally its statistics.
+    /// </summary>
+    /// <param name="request">Package info request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<PackageInfoResponse?> GetPackageInfo(PackageInfoRequest request, CancellationToken cancellationToken = default);
 }

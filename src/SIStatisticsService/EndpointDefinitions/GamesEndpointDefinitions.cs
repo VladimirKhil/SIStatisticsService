@@ -22,6 +22,28 @@ internal static class GamesEndpointDefinitions
             return Results.Ok(new GamesResponse { Results = games });
         });
 
+        // GET /api/v1/games/packages/info
+        gamesGroup.MapGet("/packages/info", async (
+            IGamesService gamesService,
+            string name,
+            string hash,
+            string authors,
+            Uri? source = null,
+            bool includeStats = false,
+            CancellationToken cancellationToken = default) =>
+        {
+            var authorsArray = authors.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var request = new PackageInfoRequest(name, hash, authorsArray, source, includeStats);
+            var packageInfo = await gamesService.GetPackageInfoAsync(request, cancellationToken);
+
+            if (packageInfo == null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(packageInfo);
+        });
+
         // GET /api/v1/games/stats
         gamesGroup.MapGet("/stats", async (
             IGamesService gamesService,

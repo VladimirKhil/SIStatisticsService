@@ -91,6 +91,19 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
             },
             cancellationToken);
 
+    public Task<PackageInfoResponse?> GetPackageInfo(PackageInfoRequest request, CancellationToken cancellationToken = default) =>
+        GetJsonAsync<PackageInfoResponse>(
+            "games/packages/info",
+            new Dictionary<string, object>
+            {
+                ["name"] = request.Name,
+                ["hash"] = request.Hash,
+                ["authors"] = string.Join(",", request.Authors),
+                ["source"] = request.Source?.ToString() ?? string.Empty,
+                ["includeStats"] = request.IncludeStats
+            },
+            cancellationToken);
+
     private Task<T?> GetJsonAsync<T>(string uri, Dictionary<string, object> parameters, CancellationToken cancellationToken)
     {
         var queryString = string.Join("&", parameters.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value.ToString() ?? "")}"));
