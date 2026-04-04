@@ -15,14 +15,14 @@ public interface IPackagesService
     /// <param name="questionText">Question text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Imports package data and collects appellated and rejected answers.
     /// </summary>
-    /// <param name="package">Package data.</param>
+    /// <param name="document">Package document data.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Import result with collected appellated and rejected answers.</returns>
-    Task<PackageImportResult> ImportPackageAsync(Package package, CancellationToken cancellationToken = default);
+    Task<PackageImportResult> ImportPackageAsync(SIDocument document, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Imports question report.

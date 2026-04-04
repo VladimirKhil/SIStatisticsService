@@ -191,7 +191,7 @@ public sealed class GamesService(
         var packageIds = packageStats.Select(ps => ps.PackageId).ToArray();
         var packageSources = await (
             from ps in connection.PackageSources
-            where packageIds.Contains(ps.PackageId)
+            where packageIds.AsEnumerable().Contains(ps.PackageId)
                 && (sourceTypeId == null || fallbackSourceTypeId == null || ps.SourceTypeId == sourceTypeId || ps.SourceTypeId == fallbackSourceTypeId)
             select new { ps.PackageId, ps.SourceTypeId, ps.Source }
         ).ToArrayAsync(cancellationToken);

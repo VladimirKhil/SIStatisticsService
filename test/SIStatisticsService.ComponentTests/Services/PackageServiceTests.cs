@@ -107,9 +107,10 @@ internal sealed class PackageServiceTests : TestsBase
         question3.Wrong.Add("Red");
         theme3.Questions.Add(question3);
         round.Themes.Add(theme3);
+        var document = SIDocument.Create(package);
 
         // Act: Import the package and collect the results
-        var result = await PackagesService.ImportPackageAsync(package);
+        var result = await PackagesService.ImportPackageAsync(document);
 
         // Assert: Verify the results
         Assert.That(result, Is.Not.Null, "Import result should not be null");

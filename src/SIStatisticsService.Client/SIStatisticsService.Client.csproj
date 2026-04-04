@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <Description>SIStatisticsService client</Description>
-    <Copyright>Copyright © Khil-soft 2023 - 2025</Copyright>
     <PackageProjectUrl>https://github.com/VladimirKhil/SIStatisticsService</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VladimirKhil/SIStatisticsService</RepositoryUrl>
     <PackageTags>SIStatisticsService</PackageTags>

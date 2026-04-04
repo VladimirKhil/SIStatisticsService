@@ -39,7 +39,7 @@ internal static class AdminEndpointDefinitions
             using var stream = file.OpenReadStream();
             using var document = SIPackages.SIDocument.LoadXml(stream);
 
-            var result = await packagesService.ImportPackageAsync(document.Package, cancellationToken);
+            var result = await packagesService.ImportPackageAsync(document, cancellationToken);
             return Results.Ok(result);
         });
 

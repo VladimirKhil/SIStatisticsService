@@ -47,13 +47,13 @@ public sealed class PackagesService(
         };
     }
 
-    public async Task<PackageImportResult> ImportPackageAsync(Package package, CancellationToken cancellationToken)
+    public async Task<PackageImportResult> ImportPackageAsync(SIDocument document, CancellationToken cancellationToken)
     {
         var result = new PackageImportResult();
 
-        for (int roundIndex = 0; roundIndex < package.Rounds.Count; roundIndex++)
+        for (int roundIndex = 0; roundIndex < document.Package.Rounds.Count; roundIndex++)
         {
-            var round = package.Rounds[roundIndex];
+            var round = document.Package.Rounds[roundIndex];
 
             for (int themeIndex = 0; themeIndex < round.Themes.Count; themeIndex++)
             {
@@ -73,14 +73,7 @@ public sealed class PackagesService(
                 for (int questionIndex = 0; questionIndex < theme.Questions.Count; questionIndex++)
                 {
                     var question = theme.Questions[questionIndex];
-
-                    if (question.GetContent().Any(ci => ci.Type != ContentTypes.Text))
-                    {
-                        // Skip non-text questions
-                        continue;
-                    }
-
-                    var questionText = question.GetText();
+                    var questionText = document.GetQuestionReportText(question);
                     int questionId;
 
                     try
