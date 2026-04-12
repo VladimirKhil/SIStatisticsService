@@ -47,10 +47,10 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
     public Task<QuestionInfoResponse?> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken = default) =>
         GetJsonAsync<QuestionInfoResponse>(
             "admin/questions",
-            new Dictionary<string, object>
+            new[]
             {
-                ["themeName"] = themeName,
-                ["questionText"] = questionText
+                new KeyValuePair<string, string?>("themeName", themeName),
+                new KeyValuePair<string, string?>("questionText", questionText)
             },
             cancellationToken);
 
@@ -83,71 +83,91 @@ internal sealed class SIStatisticsServiceClient : ISIStatisticsServiceClient
     public Task<PackageStats?> GetPackageStats(PackageStatsRequest request, CancellationToken cancellationToken = default) =>
         GetJsonAsync<PackageStats>(
             "games/packages/stats",
-            new Dictionary<string, object>
-            {
-                ["name"] = request.Name,
-                ["hash"] = request.Hash,
-                ["authors"] = string.Join(",", request.Authors)
-            },
+            BuildRequest(request),
             cancellationToken);
 
     public Task<PackageInfoResponse?> GetPackageInfo(PackageInfoRequest request, CancellationToken cancellationToken = default) =>
         GetJsonAsync<PackageInfoResponse>(
             "games/packages/info",
-            new Dictionary<string, object>
-            {
-                ["name"] = request.Name,
-                ["hash"] = request.Hash,
-                ["authors"] = string.Join(",", request.Authors),
-                ["source"] = request.Source?.ToString() ?? string.Empty,
-                ["includeStats"] = request.IncludeStats
-            },
+            BuildRequest(request),
             cancellationToken);
 
-    private Task<T?> GetJsonAsync<T>(string uri, Dictionary<string, object> parameters, CancellationToken cancellationToken)
+    private Task<T?> GetJsonAsync<T>(string uri, IEnumerable<KeyValuePair<string, string?>> parameters, CancellationToken cancellationToken)
     {
-        var queryString = string.Join("&", parameters.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value.ToString() ?? "")}"));
+        var queryString = string.Join("&", parameters
+            .Where(p => p.Value != null)
+            .Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value!)}"));
 
         return _client.GetFromJsonAsync<T>(uri + (queryString.Length > 0 ? '?' + queryString : ""), cancellationToken);
     }
 
-    private static Dictionary<string, object> BuildFilter(StatisticFilter filter)
+    private static List<KeyValuePair<string, string?>> BuildFilter(StatisticFilter filter)
     {
-        var result = new Dictionary<string, object>()
+        var result = new List<KeyValuePair<string, string?>>()
         {
-            ["platform"] = filter.Platform,
-            ["from"] = filter.From.ToString("yyyy-MM-ddTHH:mm:sszzz"),
-            ["to"] = filter.To.ToString("yyyy-MM-ddTHH:mm:sszzz")
+            new("platform", filter.Platform.ToString()),
+            new("from", filter.From.ToString("yyyy-MM-ddTHH:mm:sszzz")),
+            new("to", filter.To.ToString("yyyy-MM-ddTHH:mm:sszzz"))
         };
 
         if (filter.Count.HasValue)
         {
-            result["count"] = filter.Count.Value;
+            result.Add(new("count", filter.Count.Value.ToString()));
         }
 
         if (filter.LanguageCode != null)
         {
-            result["languageCode"] = filter.LanguageCode;
+            result.Add(new("languageCode", filter.LanguageCode));
         }
 
         return result;
     }
 
-    private static Dictionary<string, object> BuildRequest(TopPackagesRequest request)
+    private static List<KeyValuePair<string, string?>> BuildRequest(TopPackagesRequest request)
     {
         var filter = BuildFilter(request.StatisticFilter);
 
         if (request.Source != null)
         {
-            filter["source"] = request.Source.ToString();
+            filter.Add(new("source", request.Source.ToString()));
         }
 
         if (request.FallbackSource != null)
         {
-            filter["fallbackSource"] = request.FallbackSource.ToString();
+            filter.Add(new("fallbackSource", request.FallbackSource.ToString()));
         }
 
         return filter;
+    }
+
+    private static List<KeyValuePair<string, string?>> BuildRequest(PackageStatsRequest request)
+    {
+        var parameters = new List<KeyValuePair<string, string?>>
+        {
+            new("name", request.Name),
+            new("hash", request.Hash)
+        };
+
+        foreach (var author in request.Authors)
+        {
+            parameters.Add(new("authors", author));
+        }
+
+        return parameters;
+    }
+
+    private static List<KeyValuePair<string, string?>> BuildRequest(PackageInfoRequest request)
+    {
+        var parameters = BuildRequest(new PackageStatsRequest(request.Name, request.Hash, request.Authors));
+
+        if (request.Source != null)
+        {
+            parameters.Add(new("source", request.Source.ToString()));
+        }
+
+        parameters.Add(new("includeStats", request.IncludeStats.ToString()));
+
+        return parameters;
     }
 
     private static async Task<SIStatisticsClientException> GetErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)

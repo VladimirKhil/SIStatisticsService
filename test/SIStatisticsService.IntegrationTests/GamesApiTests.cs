@@ -581,6 +581,64 @@ internal sealed class GamesApiTests : TestsBase
         });
     }
 
+    [Test]
+    public async Task PackageEndpoints_AuthorContainingComma_Ok()
+    {
+        var testId = Guid.NewGuid().ToString();
+        var packageName = $"CommaAuthorPackage_{testId}";
+        var packageHash = $"comma_author_hash_{testId}";
+        var authors = new[]
+        {
+            $"Lastname, Firstname {testId}",
+            $"Second Author {testId}"
+        };
+
+        var gameResultInfo = new GameResultInfo(new PackageInfo(packageName, packageHash, authors))
+        {
+            FinishTime = DateTimeOffset.UtcNow,
+            Duration = TimeSpan.FromMinutes(25),
+            Name = $"CommaAuthorGame_{testId}",
+            Platform = GamePlatforms.Local,
+            Results = new Dictionary<string, int> { ["Player"] = 1000 },
+            Reviews = []
+        };
+
+        var packageStats = new PackageStats(
+            new PackageTopLevelStats(2, 2),
+            new Dictionary<string, QuestionStats>
+            {
+                ["comma_author_question"] = new QuestionStats(4, 4, 3, 2, 1)
+            });
+
+        var gameReport = new GameReport
+        {
+            Id = Guid.NewGuid(),
+            Info = gameResultInfo,
+            Stats = packageStats,
+            QuestionReports = Array.Empty<QuestionReport>()
+        };
+
+        await SIStatisticsClient.SendGameReportAsync(gameReport);
+
+        var packageInfo = await SIStatisticsClient.GetPackageInfo(new PackageInfoRequest(packageName, packageHash, authors, IncludeStats: true));
+        var retrievedStats = await SIStatisticsClient.GetPackageStats(new PackageStatsRequest(packageName, packageHash, authors));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(packageInfo, Is.Not.Null, "Package info should be retrievable when an author contains a comma");
+            Assert.That(retrievedStats, Is.Not.Null, "Package stats should be retrievable when an author contains a comma");
+
+            Assert.That(packageInfo!.Package.Name, Is.EqualTo(packageName));
+            Assert.That(packageInfo.Package.Hash, Is.EqualTo(packageHash));
+            Assert.That(packageInfo.Package.Authors, Is.EquivalentTo(authors));
+            Assert.That(packageInfo.Stats, Is.Not.Null);
+            Assert.That(packageInfo.Stats!.TopLevelStats.CompletedGameCount, Is.EqualTo(2));
+
+            Assert.That(retrievedStats!.TopLevelStats.CompletedGameCount, Is.EqualTo(2));
+            Assert.That(retrievedStats.QuestionStats, Contains.Key("comma_author_question"));
+        });
+    }
+
     private Task AddPackageGamesAsync(string packageName, string? languageCode = null)
     {
         var gameResultInfo2 = new GameResultInfo(new PackageInfo(packageName, "2", ["TestAuthor 2"]), languageCode)

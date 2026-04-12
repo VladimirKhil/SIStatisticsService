@@ -27,13 +27,12 @@ internal static class GamesEndpointDefinitions
             IGamesService gamesService,
             string name,
             string hash,
-            string authors,
+            string[] authors,
             Uri? source = null,
             bool includeStats = false,
             CancellationToken cancellationToken = default) =>
         {
-            var authorsArray = authors.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            var request = new PackageInfoRequest(name, hash, authorsArray, source, includeStats);
+            var request = new PackageInfoRequest(name, hash, authors, source, includeStats);
             var packageInfo = await gamesService.GetPackageInfoAsync(request, cancellationToken);
 
             if (packageInfo == null)
@@ -71,11 +70,10 @@ internal static class GamesEndpointDefinitions
             IGamesService gamesService,
             string name,
             string hash,
-            string authors,
+            string[] authors,
             CancellationToken cancellationToken = default) =>
         {
-            var authorsArray = authors.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            var request = new PackageStatsRequest(name, hash, authorsArray);
+            var request = new PackageStatsRequest(name, hash, authors);
             var packageStats = await gamesService.GetPackageStatsAsync(request, cancellationToken);
 
             if (packageStats == null)

@@ -40,8 +40,11 @@ export default class SIStatisticsClient {
 	 * @param request Request for package statistics.
 	 */
 	async getPackageStats(request: PackageStatsRequest) {
-		const authors = request.authors.join(',');
-		return this.getAsync<PackageStats>(`games/packages/stats?name=${encodeURIComponent(request.name)}&hash=${encodeURIComponent(request.hash)}&authors=${encodeURIComponent(authors)}`);
+		const authors = request.authors
+			.map(author => `authors=${encodeURIComponent(author)}`)
+			.join('&');
+		const authorsQuery = authors ? `&${authors}` : '';
+		return this.getAsync<PackageStats>(`games/packages/stats?name=${encodeURIComponent(request.name)}&hash=${encodeURIComponent(request.hash)}${authorsQuery}`);
 	}
 
 	private buildFilter(filter: StatisticFilter) {

@@ -48,10 +48,7 @@ public sealed class GamesService(
 
     public async Task<PackageInfoResponse?> GetPackageInfoAsync(PackageInfoRequest request, CancellationToken cancellationToken = default)
     {
-        // Find the package first
-        var package = await connection.Packages
-            .FirstOrDefaultAsync(p => p.Name == request.Name && p.Hash == request.Hash && p.Authors == request.Authors,
-                cancellationToken);
+        var package = await FindPackageAsync(request.Name, request.Hash, request.Authors, cancellationToken);
 
         if (package == null || package.Hidden)
         {
@@ -276,12 +273,7 @@ public sealed class GamesService(
 
     public async Task<PackageStats?> GetPackageStatsAsync(PackageStatsRequest request, CancellationToken cancellationToken = default)
     {
-        // Find the package first
-        var package = await connection.Packages
-            .FirstOrDefaultAsync(p => p.Name == request.Name &&
-                                    p.Hash == request.Hash &&
-                                    p.Authors == request.Authors,
-                                cancellationToken);
+        var package = await FindPackageAsync(request.Name, request.Hash, request.Authors, cancellationToken);
 
         if (package == null || package.Hidden || package.Stats == null)
         {
@@ -301,6 +293,38 @@ public sealed class GamesService(
                 qs.Value.WrongCount));
 
         return new PackageStats(topLevelStats, questionStats);
+    }
+
+    private async Task<PackageModel?> FindPackageAsync(string name, string hash, string[] authors, CancellationToken cancellationToken)
+    {
+        var package = await connection.Packages
+            .FirstOrDefaultAsync(p => p.Name == name && p.Hash == hash && p.Authors == authors, cancellationToken);
+
+        if (package != null)
+        {
+            return package;
+        }
+
+        var legacyAuthors = TrySplitLegacyAuthors(authors);
+
+        if (legacyAuthors == null)
+        {
+            return null;
+        }
+
+        return await connection.Packages
+            .FirstOrDefaultAsync(p => p.Name == name && p.Hash == hash && p.Authors == legacyAuthors, cancellationToken);
+    }
+
+    private static string[]? TrySplitLegacyAuthors(string[] authors)
+    {
+        if (authors.Length != 1 || !authors[0].Contains(','))
+        {
+            return null;
+        }
+
+        var legacyAuthors = authors[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
+        return legacyAuthors.Length > 1 ? legacyAuthors : null;
     }
 
     private async Task<int?> GetLanguageIdAsync(string? languageCode, CancellationToken cancellationToken)
