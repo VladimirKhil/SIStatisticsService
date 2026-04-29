@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using Npgsql;
 using SIPackages;
-using SIPackages.Core;
 using SIStatisticsService.Configuration;
 using SIStatisticsService.Contract.Models;
 using SIStatisticsService.Contracts;
@@ -20,6 +19,8 @@ public sealed class PackagesService(
     IOptions<SIStatisticsServiceOptions> options,
     ILogger<PackagesService> logger) : IPackagesService
 {
+    private const int MaxCollectedAnswers = 10;
+
     private readonly SIStatisticsServiceOptions _options = options.Value;
 
     public async Task<QuestionInfoResponse> GetQuestionInfoAsync(string themeName, string questionText, CancellationToken cancellationToken)
@@ -70,6 +71,12 @@ public sealed class PackagesService(
                     continue;
                 }
 
+                if (themeId == -1)
+                {
+                    // Theme name is empty, skip inserting questions and answers for this theme
+                    continue;
+                }
+
                 for (int questionIndex = 0; questionIndex < theme.Questions.Count; questionIndex++)
                 {
                     var question = theme.Questions[questionIndex];
@@ -83,6 +90,12 @@ public sealed class PackagesService(
                     catch (LimitExceedException)
                     {
                         metrics.AddLimitExceed();
+                        continue;
+                    }
+
+                    if (questionId == -1)
+                    {
+                        // Question text is empty, skip inserting answers for this question
                         continue;
                     }
 
@@ -124,6 +137,12 @@ public sealed class PackagesService(
         catch (LimitExceedException)
         {
             metrics.AddLimitExceed();
+            return;
+        }
+
+        if (themeId == -1 || questionId == -1)
+        {
+            // Theme name or question text is empty, skip inserting the answer
             return;
         }
 
@@ -236,6 +255,12 @@ public sealed class PackagesService(
     {
         questionText = ValueNormalizer.Normalize(questionText);
 
+        if (string.IsNullOrEmpty(questionText))
+        {
+            // Don't insert empty question text to database, as it doesn't make sense and takes space
+            return -1;
+        }
+
         try
         {
             await connection.Questions.InsertOrUpdateAsync(
@@ -262,6 +287,12 @@ public sealed class PackagesService(
     private async Task<int> InsertThemeNameAsync(string themeName, CancellationToken cancellationToken)
     {
         themeName = ValueNormalizer.Normalize(themeName);
+
+        if (string.IsNullOrEmpty(themeName))
+        {
+            // Don't insert empty theme name to database, as it doesn't make sense and takes space
+            return -1;
+        }
 
         try
         {
@@ -299,6 +330,7 @@ public sealed class PackagesService(
                   (r.Type == Database.Models.Questions.RelationType.Apellated ||
                   r.Type == Database.Models.Questions.RelationType.Rejected) &&
                   r.Count >= _options.CollectedAnswersThreshold
+            orderby r.Count descending, e.Name
             select new CollectedAnswer
             {
                 AnswerText = e.Name,
@@ -306,7 +338,7 @@ public sealed class PackagesService(
                 Count = r.Count
             };
 
-        return await query.ToListAsync(cancellationToken);
+        return await query.Take(MaxCollectedAnswers).ToListAsync(cancellationToken);
     }
 
     private void LogLimit(string text, PostgresException exc) =>
